@@ -32,6 +32,17 @@ solana_client = AsyncClient(SOLANA_RPC)
 HOUSE_KEY_FILE = "house_key.json"
 
 def load_or_create_keypair():
+    # 1. Try Environment Variable (For Heroku/Prod)
+    env_secret = os.environ.get("HOUSE_KEY_SECRET")
+    if env_secret:
+        try:
+            # Expecting string "[1, 2, 3...]"
+            secret_list = json.loads(env_secret)
+            return Keypair.from_bytes(bytes(secret_list))
+        except Exception as e:
+            print(f"[SOLANA] Failed to load key from ENV: {e}")
+
+    # 2. Try Local File
     if os.path.exists(HOUSE_KEY_FILE):
         try:
             with open(HOUSE_KEY_FILE, "r") as f:
@@ -40,13 +51,19 @@ def load_or_create_keypair():
                 # solders keypair from bytes
                 return Keypair.from_bytes(bytes(secret))
         except Exception as e:
-            print(f"[SOLANA] Failed to load keypair: {e}")
+            print(f"[SOLANA] Failed to load keypair from file: {e}")
     
-    # Generate new if failed or not exists
+    # 3. Generate new if failed or not exists
     kp = Keypair()
-    with open(HOUSE_KEY_FILE, "w") as f:
-        # Save as list of integers (standard format)
-        json.dump({"secret": list(bytes(kp))}, f)
+    # Only save to file if we are NOT in production (implied by missing env var usually, 
+    # but here we just write if we had to generate it)
+    try:
+        with open(HOUSE_KEY_FILE, "w") as f:
+            # Save as list of integers (standard format)
+            json.dump({"secret": list(bytes(kp))}, f)
+    except:
+        pass # Might be read-only filesystem
+        
     return kp
 
 HOUSE_KEYPAIR = load_or_create_keypair()
