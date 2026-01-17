@@ -272,13 +272,36 @@ function renderLeaderboard(data) {
         return;
     }
 
-    leaderboardBody.innerHTML = data.map((entry, index) => `
+    leaderboardBody.innerHTML = data.map((entry, index) => {
+        // Fallback for old data or default
+        const className = entry.class || 'Vanguard';
+
+        let icon = '🛡️';
+        let styleClass = 'text-blue-400 bg-blue-500/10 border-blue-500/20';
+
+        if (className === 'Interceptor') {
+            icon = '⚡';
+            styleClass = 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
+        } else if (className === 'Juggernaut') {
+            icon = '🦍';
+            styleClass = 'text-red-400 bg-red-500/10 border-red-500/20';
+        }
+
+        return `
         <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
             <td class="py-3 pl-3 text-white/30 font-mono text-xs w-8">${String(index + 1).padStart(2, '0')}</td>
-            <td class="py-3 text-white/80 font-medium text-sm">${entry.name}</td>
-            <td class="py-3 pr-3 text-right text-ios-blue font-semibold text-sm">${entry.score}</td>
+            <td class="py-3 text-white/80 font-medium text-sm">
+                ${entry.name}
+            </td>
+            <td class="py-3 text-right">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-medium uppercase tracking-wider ${styleClass}">
+                    <span class="text-xs">${icon}</span>
+                    <span class="hidden sm:inline">${className}</span>
+                </span>
+            </td>
+            <td class="py-3 pr-3 text-right text-ios-blue font-semibold text-sm w-16">${entry.score}</td>
         </tr>
-    `).join('');
+    `}).join('');
 }
 
 // ----- LOADOUT LOGIC -----

@@ -37,6 +37,7 @@ class GameState:
     start_time: float = 0
     score: int = 0
     player_name: str = "Anonymous"
+    player_class: str = "Vanguard"
     game_duration: int = 60  # seconds
 
 class ConnectionManager:
@@ -237,6 +238,7 @@ class ConnectionManager:
             self.game_state.start_time = time.time()
             self.game_state.score = 0
             self.game_state.player_name = self.confirming_player_data["name"]
+            self.game_state.player_class = loadout.get("name", "Vanguard")
             
             print(f"Game Started for {self.game_state.player_name} with loadout {loadout.get('name')}")
             await self.broadcast_game_update()
@@ -252,6 +254,7 @@ class ConnectionManager:
             leaderboard.append({
                 "name": self.game_state.player_name,
                 "score": self.game_state.score,
+                "class": self.game_state.player_class,
                 "date": time.strftime("%Y-%m-%d %H:%M")
             })
             save_leaderboard(leaderboard)
