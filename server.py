@@ -597,23 +597,23 @@ async def websocket_endpoint(websocket: WebSocket, client_type: str):
                             # Run blocking CV code in a thread pool
                             qr_results = await loop.run_in_executor(None, process_frame_for_qr, data)
                             
-                            # Broadcast detections if found
-                            if qr_results:
-                                json_payload = json.dumps({
-                                    "type": "qr_detected",
-                                    "data": qr_results
-                                })
-                                
-                                # Broadcast to all clients
-                                # We can't use manager.broadcast_game_update logic here easily without duplicating, 
-                                # but we can just loop over connections.
-                                # Note: accessing active_connections is not thread-safe if modified elsewhere, 
-                                # but since we are awaiting result back in the main thread, it is safe here.
-                                for connection in manager.active_connections:
-                                    try:
-                                        await connection.send_text(json_payload)
-                                    except:
-                                        pass
+                            # Broadcast results (even if empty, to clear previous boxes)
+                            # if qr_results: # Removed check so we clear stale boxes
+                            json_payload = json.dumps({
+                                "type": "qr_detected",
+                                "data": qr_results
+                            })
+                            
+                            # Broadcast to all clients
+                            # We can't use manager.broadcast_game_update logic here easily without duplicating, 
+                            # but we can just loop over connections.
+                            # Note: accessing active_connections is not thread-safe if modified elsewhere, 
+                            # but since we are awaiting result back in the main thread, it is safe here.
+                            for connection in manager.active_connections:
+                                try:
+                                    await connection.send_text(json_payload)
+                                except:
+                                    pass
                                     
                     except Exception as e:
                          print(f"CV Error: {e}")

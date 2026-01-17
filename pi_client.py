@@ -4,8 +4,8 @@ import cv2
 import numpy as np
 import time
 
-#SERVER_URL = "ws://localhost:8000/ws/pi"
-SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
+SERVER_URL = "ws://localhost:8000/ws/pi"
+#SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
 
 # Camera Setup (Try index 0, else 1, else None)
 cap = cv2.VideoCapture(0)

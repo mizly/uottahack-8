@@ -1,4 +1,5 @@
 const videoFeed = document.getElementById('video-feed');
+const videoOverlay = document.getElementById('video-overlay');
 const connectionStatus = document.getElementById('connection-status');
 const timerDisplay = document.getElementById('timer-display');
 const scoreDisplay = document.getElementById('score-display');
@@ -255,6 +256,9 @@ const keys = {
     '6': false, '7': false, '8': false, '9': false, '0': false
 };
 
+// Video Stream Watchdog
+let frameWatchdog = null;
+
 function connect() {
     socket = new WebSocket(wsUrl);
     // Important: Do NOT set binaryType = "blob" globally if we want to easily distinguish text frames.
@@ -269,6 +273,7 @@ function connect() {
         setConnectionState(true);
         requestAnimationFrame(updateLoop);
         console.log("WS Connected");
+        // videoOverlay.classList.remove('hidden'); // Start shown until first frame
     };
 
     socket.onmessage = (event) => {
@@ -298,6 +303,15 @@ function connect() {
                 const url = URL.createObjectURL(event.data);
                 videoFeed.onload = () => URL.revokeObjectURL(url);
                 videoFeed.src = url;
+
+                // Hide overlay on frame receive
+                videoOverlay.classList.add('hidden');
+
+                // Reset Watchdog
+                if (frameWatchdog) clearTimeout(frameWatchdog);
+                frameWatchdog = setTimeout(() => {
+                    videoOverlay.classList.remove('hidden');
+                }, 3000); // 3 Seconds timeout
             } else {
                 console.warn("Received binary but not Blob:", event.data);
             }
@@ -306,6 +320,9 @@ function connect() {
 
     socket.onclose = () => {
         setConnectionState(false);
+        // Show overlay on disconnect
+        videoOverlay.classList.remove('hidden');
+        if (frameWatchdog) clearTimeout(frameWatchdog);
         setTimeout(connect, 2000);
     };
 
