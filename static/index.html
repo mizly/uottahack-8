@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pi Remote Control Viewer</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #222;
+            color: #fff;
+            text-align: center;
+        }
+
+        #video-feed {
+            width: 640px;
+            height: 480px;
+            background: #333;
+            margin: 20px auto;
+            border: 2px solid #555;
+            display: block;
+        }
+
+        #status {
+            margin-bottom: 10px;
+            color: #aaa;
+        }
+
+        .controls-info {
+            font-size: 0.8em;
+            color: #888;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Pi Remote Control</h1>
+    <div id="status">Disconnected</div>
+    <img id="video-feed" alt="Waiting for Video Stream..." />
+
+    <div class="controls-info">
+        <p><strong>Controls:</strong></p>
+        <p>Gamepad: Connect controller & press any button</p>
+        <p>Keyboard: WASD (Left Stick), Arrows (Right Stick), Space/Shift (Buttons)</p>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
