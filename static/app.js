@@ -80,6 +80,146 @@ function drawQRCodes(detections) {
     });
 }
 
+// ----- SOLANA CONFIG -----
+let userWallet = null; // Public Key Object
+let currentMode = 'casual';
+let housePublicKey = null;
+
+// Fetch House Key
+fetch('/house-key').then(r => r.json()).then(data => {
+    housePublicKey = data.publicKey;
+    console.log("House Wallet:", housePublicKey);
+}).catch(e => console.log("House key fetch failed (server probably not updated yet)"));
+
+async function connectWallet() {
+    if (window.solana && window.solana.isPhantom) {
+        try {
+            const resp = await window.solana.connect();
+            userWallet = resp.publicKey;
+
+            // Update UI
+            updateWalletUI(userWallet.toString());
+            refreshBalance();
+        } catch (err) {
+            console.error(err);
+        }
+    } else {
+        window.open("https://phantom.app/", "_blank");
+    }
+}
+
+async function refreshBalance() {
+    if (!userWallet) return;
+    try {
+        const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
+        const balance = await connection.getBalance(userWallet);
+        const sol = (balance / solanaWeb3.LAMPORTS_PER_SOL).toFixed(2);
+
+        const walletText = document.getElementById('wallet-text');
+        // Keep address, append balance
+        const addr = userWallet.toString().slice(0, 4) + '...' + userWallet.toString().slice(-4);
+        walletText.textContent = `${addr} (${sol} SOL)`;
+    } catch (e) {
+        console.error("Failed to fetch balance", e);
+    }
+}
+
+function updateWalletUI(addressStr) {
+    document.getElementById('wallet-text').textContent = addressStr.slice(0, 4) + '...' + addressStr.slice(-4);
+    document.getElementById('wallet-indicator').className = "w-2 h-2 rounded-full bg-ios-green shadow-[0_0_8px_rgba(48,209,88,1)]";
+}
+
+window.setMode = (mode) => {
+    currentMode = mode;
+
+    // UI Updates
+    const casualBtn = document.getElementById('mode-casual');
+    const rankedBtn = document.getElementById('mode-ranked');
+    const rankedInfo = document.getElementById('ranked-info');
+    const deployBtn = document.querySelector('button[onclick="confirmLoadout()"]');
+
+    if (mode === 'casual') {
+        casualBtn.className = "px-6 py-2 rounded-full text-sm font-medium transition-all bg-ios-blue text-white shadow-lg";
+        rankedBtn.className = "px-6 py-2 rounded-full text-sm font-medium transition-all text-white/50 hover:text-white";
+        rankedInfo.classList.add('hidden');
+        deployBtn.innerHTML = "DEPLOY UNIT";
+    } else {
+        rankedBtn.className = "px-6 py-2 rounded-full text-sm font-medium transition-all bg-ios-yellow text-black shadow-lg shadow-ios-yellow/20";
+        casualBtn.className = "px-6 py-2 rounded-full text-sm font-medium transition-all text-white/50 hover:text-white";
+        rankedInfo.classList.remove('hidden');
+        deployBtn.innerHTML = `PAY 0.1 SOL & DEPLOY`;
+    }
+};
+
+window.confirmLoadout = async () => {
+    if (currentMode === 'ranked') {
+        if (!userWallet) {
+            alert("Please connect your wallet first!");
+            connectWallet();
+            return;
+        }
+
+        const button = document.querySelector('button[onclick="confirmLoadout()"]');
+        const originalText = button.innerText;
+        button.disabled = true;
+        button.innerText = "Processing Transaction...";
+
+        try {
+            // Create Transaction
+            const connection = new solanaWeb3.Connection(solanaWeb3.clusterApiUrl('devnet'), 'confirmed');
+
+            if (!housePublicKey) {
+                throw new Error("Server wallet address missing. Refresh.");
+            }
+
+            const transaction = new solanaWeb3.Transaction().add(
+                solanaWeb3.SystemProgram.transfer({
+                    fromPubkey: userWallet,
+                    toPubkey: new solanaWeb3.PublicKey(housePublicKey),
+                    lamports: 0.1 * solanaWeb3.LAMPORTS_PER_SOL // 0.1 SOL Entry
+                })
+            );
+
+            const { blockhash } = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = blockhash;
+            transaction.feePayer = userWallet;
+
+            // Sign and Send (Wallet Adapter Only)
+            const { signature } = await window.solana.signAndSendTransaction(transaction);
+            console.log("Transaction Sent:", signature);
+            button.innerText = "Verifying...";
+
+            // Wait for brief propagation
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            refreshBalance();
+
+            closeLoadout();
+            // Send join request with loadout and signature
+            sendJson({
+                action: "confirm_match",
+                loadout: selectedLoadout,
+                mode: 'ranked',
+                signature: signature,
+                publicKey: userWallet.toString()
+            });
+
+        } catch (err) {
+            console.error("Transaction failed", err);
+            alert("Transaction Failed: " + err.message);
+            button.disabled = false;
+            button.innerText = originalText;
+        }
+
+    } else {
+        // Casual - Standard Flow
+        closeLoadout();
+        sendJson({
+            action: "confirm_match",
+            loadout: selectedLoadout,
+            mode: 'casual'
+        });
+    }
+};
 // Landing Screen Logic
 const enterBtn = document.getElementById('enter-btn');
 if (enterBtn) {
@@ -190,6 +330,7 @@ const simControls = document.getElementById('sim-controls'); // Debug controls
 
 let myName = "";
 let isMyTurn = false;
+let wasActive = false;
 let confirmationTimerInterval = null;
 
 // ... (socket connection logic same as before, updateGameState changes)
@@ -199,6 +340,15 @@ function updateGameState(state) {
     timerDisplay.textContent = state.time_left;
     scoreDisplay.textContent = state.score;
     currentPilotName.textContent = state.player || "None"; // Who is playing?
+
+    // Check if game just ended
+    if (wasActive && !state.active) {
+        if (state.player === myName) {
+            console.log("Game Ended. Refreshing balance...");
+            setTimeout(refreshBalance, 2000); // Wait for payout tx
+        }
+    }
+    wasActive = state.active;
 
     // Check if it's MY turn
     isMyTurn = (state.active && state.player === myName);
@@ -380,20 +530,6 @@ window.selectTank = (id) => {
     selectedLoadout = { id, name };
 };
 
-window.confirmLoadout = () => {
-    closeLoadout();
-    // Send join request with loadout
-    sendJson({
-        action: "confirm_match",
-        loadout: selectedLoadout
-    });
-};
-
-// Deprecated direct join, kept for legacy or quick-start if needed
-window.joinQueue = () => {
-    // Redirect to loadout flow
-    window.requestLoadout();
-};
 
 window.stopGame = () => {
     sendJson({ action: "stop_game" });

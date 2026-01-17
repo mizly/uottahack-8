@@ -3,3 +3,6 @@ uvicorn
 websockets
 opencv-python
 numpy
+solana
+solders
+

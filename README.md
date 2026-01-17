@@ -1,4 +1,11 @@
-# UOttaHack 8 Project
+# UOttaHack 8 Project - RoboCommander 🤖 + Solana ◎
+## Features
+- **Real-time Video Feed**: Low latency streaming from Pi.
+- **Low Latency Control**: WebSocket-based control loop.
+- **Two Game Modes**:
+    - **Casual**: Free to play.
+    - **Ranked**: Pay 0.1 SOL Entry Fee -> Win -> Get 0.18 SOL Payout.
+- **Leaderboard**: Track top pilots.
 
 This project implements a real-time remote control system with video streaming using WebSockets. It consists of a central FastAPI server, a web-based client for control, and a Python client (simulating a Raspberry Pi) that receives controls and streams video.
 
@@ -30,6 +37,13 @@ This project implements a real-time remote control system with video streaming u
     ```bash
     pip install -r requirements.txt
     ```
+
+4. **Solana Devnet Setup**:
+   The server acts as the "House" and needs a wallet to hold entry fees and pay out winnings.
+   - Start the server (step below).
+   - Look for the `[SOLANA] House Wallet Public Key` in the terminal output.
+   - **Send Devnet SOL to this address** so it has funds to pay out winners!
+   - You can get Devnet SOL from [faucet.solana.com](https://faucet.solana.com/).
 
 ## Running the Project
 

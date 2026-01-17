@@ -7,6 +7,8 @@
     <title>RoboCommander Pro</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Solana Web3.js -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -307,7 +309,29 @@
                 </svg>
             </button>
 
-            <header class="text-center mb-10">
+            <header class="text-center mb-8">
+                <!-- Mode Toggle -->
+                <div class="inline-flex bg-white/5 rounded-full p-1 mb-6 border border-white/5">
+                    <button id="mode-casual" onclick="setMode('casual')"
+                        class="px-6 py-2 rounded-full text-sm font-medium transition-all bg-ios-blue text-white shadow-lg">
+                        Casual
+                    </button>
+                    <button id="mode-ranked" onclick="setMode('ranked')"
+                        class="px-6 py-2 rounded-full text-sm font-medium transition-all text-white/50 hover:text-white">
+                        Ranked
+                    </button>
+                </div>
+
+                <div id="ranked-info"
+                    class="hidden mb-4 p-4 rounded-xl bg-gradient-to-r from-ios-yellow/10 to-transparent border border-ios-yellow/20 max-w-md mx-auto">
+                    <div class="flex items-center justify-between text-ios-yellow">
+                        <span class="flex items-center gap-2 text-sm font-semibold">
+                            ⚠️ RANKED MATCH
+                        </span>
+                        <span class="font-mono text-sm">Entry: 0.1 SOL</span>
+                    </div>
+                </div>
+
                 <h2 class="text-3xl font-semibold text-white mb-2">Select Your Chassis</h2>
                 <p class="text-white/50">Confirm deployment in <span id="loadout-timer"
                         class="text-ios-yellow font-mono font-bold">30</span>s</p>
@@ -520,11 +544,20 @@
                 <h1 class="text-xl font-medium tracking-tight text-white/90">RoboCommander</h1>
             </div>
 
-            <div id="connection-status"
-                class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-ios-gray transition-all">
-                <!-- JS Inject -->
-                <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-pulse"></span>
-                <span>Connecting...</span>
+            <!-- Wallet & Connection -->
+            <div class="flex items-center gap-4">
+                <button id="wallet-btn" onclick="connectWallet()"
+                    class="glass-panel px-4 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-white hover:bg-white/10 transition-all border border-ios-blue/30 shadow-[0_0_15px_rgba(10,132,255,0.2)]">
+                    <span class="w-2 h-2 rounded-full bg-ios-gray" id="wallet-indicator"></span>
+                    <span id="wallet-text">Connect Wallet</span>
+                </button>
+
+                <div id="connection-status"
+                    class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-ios-gray transition-all">
+                    <!-- JS Inject -->
+                    <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-pulse"></span>
+                    <span>Connecting...</span>
+                </div>
             </div>
         </header>
 
