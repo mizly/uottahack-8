@@ -174,12 +174,26 @@ class ConnectionManager:
             await self.pi_ws.send_bytes(message)
 
     async def broadcast_to_clients(self, message: bytes):
-        # Broadcast video to ALL connected clients (spectators included)
-        for connection in self.active_connections:
+        if not self.active_connections:
+            return
+
+        async def send_safe(ws):
             try:
-                await connection.send_bytes(message)
+                await ws.send_bytes(message)
+                return None
             except:
-                pass
+                return ws # Return the websocket object if it failed
+
+        # Run all sends concurrently
+        results = await asyncio.gather(*[send_safe(ws) for ws in self.active_connections])
+        
+        # Cleanup failed connections
+        for ws in results:
+            if ws:
+                try:
+                    self.active_connections.remove(ws)
+                except ValueError:
+                    pass
     
     async def broadcast_game_update(self):
         """Send current game state, queue, and leaderboard to ALL clients"""
