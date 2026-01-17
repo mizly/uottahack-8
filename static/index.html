@@ -1,52 +1,160 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pi Remote Control Viewer</title>
+    <title>Robot Command Center</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                        },
+                        dark: {
+                            800: '#1f2937',
+                            900: '#111827',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: sans-serif;
-            background: #222;
-            color: #fff;
-            text-align: center;
-        }
-
-        #video-feed {
-            width: 640px;
-            height: 480px;
-            background: #333;
-            margin: 20px auto;
-            border: 2px solid #555;
-            display: block;
-        }
-
-        #status {
-            margin-bottom: 10px;
-            color: #aaa;
-        }
-
-        .controls-info {
-            font-size: 0.8em;
-            color: #888;
-            margin-top: 20px;
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
+<body class="bg-gray-900 text-gray-100 min-h-screen flex flex-col items-center p-4">
 
-<body>
-    <h1>Pi Remote Control</h1>
-    <div id="status">Disconnected</div>
-    <img id="video-feed" alt="Waiting for Video Stream..." />
+    <!-- Header -->
+    <header class="w-full max-w-6xl flex justify-between items-center mb-6 py-4 border-b border-gray-700">
+        <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+            🤖 RoboCommander
+        </h1>
+        <div id="connection-status" class="flex items-center space-x-2 text-sm text-red-400">
+            <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+            <span>Disconnected</span>
+        </div>
+    </header>
 
-    <div class="controls-info">
-        <p><strong>Controls:</strong></p>
-        <p>Gamepad: Connect controller & press any button</p>
-        <p>Keyboard: WASD (Left Stick), Arrows (Right Stick), Space/Shift (Buttons)</p>
-    </div>
+    <main class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- Left: Game Controls & Leaderboard -->
+        <aside class="space-y-6">
+            
+            <!-- Game Control Panel -->
+            <div class="glass-panel rounded-xl p-6 shadow-xl">
+                <h2 class="text-xl font-semibold mb-4 text-gray-200">Mission Control</h2>
+                
+                <!-- Player Name Input -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-400 mb-1">Operative Name</label>
+                    <input type="text" id="player-name" placeholder="Enter codename..." 
+                        class="w-full bg-gray-800 border border-gray-700 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all">
+                </div>
+
+                <!-- Start Button (Active only when not playing) -->
+                <div id="start-panel">
+                    <button onclick="startGame()" 
+                        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition-all transform hover:scale-105 shadow-lg shadow-blue-500/30">
+                        START MISSION
+                    </button>
+                </div>
+
+                <!-- Active Game Stats (Hidden by default) -->
+                <div id="game-active-panel" class="hidden space-y-4">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-gray-800 p-3 rounded-lg text-center">
+                            <div class="text-xs text-gray-400 uppercase">Time Left</div>
+                            <div id="timer-display" class="text-2xl font-mono font-bold text-yellow-400">0</div>
+                        </div>
+                        <div class="bg-gray-800 p-3 rounded-lg text-center">
+                            <div class="text-xs text-gray-400 uppercase">Score</div>
+                            <div id="score-display" class="text-2xl font-mono font-bold text-green-400">0</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Sim Controls for testing -->
+                    <div class="pt-4 border-t border-gray-700">
+                        <p class="text-xs text-gray-500 mb-2">DEBUG: Simulate Score</p>
+                        <div class="flex space-x-2">
+                            <button onclick="addScore(10)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-xs py-2 rounded">+10 pts</button>
+                            <button onclick="addScore(50)" class="flex-1 bg-gray-700 hover:bg-gray-600 text-xs py-2 rounded">+50 pts</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leaderboard -->
+            <div class="glass-panel rounded-xl p-6 shadow-xl">
+                <h2 class="text-xl font-semibold mb-4 text-gray-200 flex items-center">
+                    <span class="mr-2">🏆</span> Top Operatives
+                </h2>
+                <div class="overflow-hidden">
+                    <table class="w-full text-sm">
+                        <thead class="text-gray-400 border-b border-gray-700">
+                            <tr>
+                                <th class="pb-2 text-left">Rank</th>
+                                <th class="pb-2 text-left">Name</th>
+                                <th class="pb-2 text-right">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-body" class="divide-y divide-gray-700/50">
+                            <!-- Leaderboard items will be injected here -->
+                            <tr class="text-gray-500 italic">
+                                <td colspan="3" class="py-4 text-center">No records yet</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right: Video Feed -->
+        <div class="lg:col-span-2 space-y-4">
+            <div class="glass-panel rounded-xl p-1 overflow-hidden shadow-2xl relative group">
+                <!-- Live indicator -->
+                <div class="absolute top-4 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded bg-opacity-80 backdrop-blur-sm z-10 flex items-center">
+                    <span class="w-2 h-2 bg-white rounded-full animate-pulse mr-2"></span> LIVE FEED
+                </div>
+
+                <img id="video-feed" 
+                    src="" 
+                    alt="Waiting for connection..." 
+                    class="w-full aspect-[4/3] object-cover bg-black rounded-lg"
+                >
+                
+                <!-- Overlay when disconnected -->
+                <div id="video-overlay" class="absolute inset-0 bg-black/80 flex items-center justify-center flex-col z-0 hidden">
+                    <p class="text-gray-400 text-lg">Signal Lost</p>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="bg-gray-800/50 rounded-lg p-4 text-sm text-gray-400 flex flex-wrap gap-4 justify-center">
+                <div class="flex items-center"><span class="bg-gray-700 px-2 py-1 rounded text-white mr-2">WASD</span> Move</div>
+                <div class="flex items-center"><span class="bg-gray-700 px-2 py-1 rounded text-white mr-2">Arrows</span> Cam/Aim</div>
+                <div class="flex items-center"><span class="bg-gray-700 px-2 py-1 rounded text-white mr-2">Space</span> Fire</div>
+            </div>
+        </div>
+
+    </main>
 
     <script src="/static/app.js"></script>
 </body>
-
 </html>
