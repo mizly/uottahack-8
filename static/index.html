@@ -298,11 +298,11 @@
     </div>
 
     <!-- Loadout Selection Modal -->
-    <div id="loadout-modal"
+    <div id="loadout-modal" onclick="if(event.target === this) abortLoadout()"
         class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
         <div class="glass-solid max-w-5xl w-full rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
             <!-- Close Btn -->
-            <button onclick="closeLoadout()"
+            <button onclick="abortLoadout()"
                 class="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -472,7 +472,7 @@
             </div>
 
             <div class="flex justify-center">
-                <button onclick="confirmLoadout()"
+                <button id="deploy-btn" onclick="confirmLoadout()"
                     class="w-full max-w-sm bg-ios-blue hover:bg-[#0071e3] text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-ios-blue/20 transform hover:scale-105">
                     DEPLOY UNIT
                 </button>
@@ -587,7 +587,7 @@
                     <canvas id="qr-canvas" class="absolute inset-0 w-full h-full pointer-events-none z-10"></canvas>
 
                     <!-- Disconnected Overlay -->
-                    <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10"
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 hidden"
                         id="video-overlay">
                         <div class="text-center space-y-2">
                             <svg class="w-10 h-10 text-white/20 mx-auto" fill="none" viewBox="0 0 24 24"
@@ -753,7 +753,8 @@
         </main>
     </div>
 
-    <script src="/static/app.js"></script>
+    <!-- <script src="/static/app.js"></script> -->
+    <script type="module" src="/static/js/main.js?v=2"></script>
 </body>
 
 </html>
