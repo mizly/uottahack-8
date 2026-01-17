@@ -268,6 +268,7 @@ function connect() {
     socket.onopen = () => {
         setConnectionState(true);
         requestAnimationFrame(updateLoop);
+        console.log("WS Connected");
     };
 
     socket.onmessage = (event) => {
@@ -290,11 +291,16 @@ function connect() {
             } catch (e) {
                 console.error("Failed to parse JSON", e);
             }
-        } else if (event.data instanceof Blob) {
-            // Video Frame
-            const url = URL.createObjectURL(event.data);
-            videoFeed.onload = () => URL.revokeObjectURL(url);
-            videoFeed.src = url;
+        } else {
+            // Assume Binary (Blob or ArrayBuffer)
+            // console.log("RX Binary:", event.data); // Uncomment to debug spam
+            if (event.data instanceof Blob) {
+                const url = URL.createObjectURL(event.data);
+                videoFeed.onload = () => URL.revokeObjectURL(url);
+                videoFeed.src = url;
+            } else {
+                console.warn("Received binary but not Blob:", event.data);
+            }
         }
     };
 
