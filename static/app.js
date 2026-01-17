@@ -224,12 +224,12 @@ window.requestLoadout = () => {
     }
     // Open Modal
     const modal = document.getElementById('loadout-modal');
-    modal.classList.remove('hidden');
+    modal.classList.add('active');
 };
 
 window.closeLoadout = () => {
     const modal = document.getElementById('loadout-modal');
-    modal.classList.add('hidden');
+    modal.classList.remove('active');
 };
 
 window.selectTank = (id) => {
