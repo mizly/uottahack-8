@@ -17,7 +17,10 @@ from solders.pubkey import Pubkey
 from solders.transaction import Transaction
 from solders.system_program import TransferParams, transfer
 from solders.hash import Hash
+from solana.rpc.commitment import Confirmed
 import solders
+
+TIMEOUT_CONFIRMATION = 120
 
 app = FastAPI()
 
@@ -244,7 +247,7 @@ class ConnectionManager:
             try:
                 await self.confirming_player_ws.send_text(json.dumps({
                     "type": "match_found",
-                    "timeout": 120
+                    "timeout": TIMEOUT_CONFIRMATION
                 }))
                 
                 # Start timeout task
@@ -260,7 +263,7 @@ class ConnectionManager:
             
     async def confirmation_timeout(self):
         try:
-            await asyncio.sleep(30)
+            await asyncio.sleep(TIMEOUT_CONFIRMATION)
             # Timeout happened
             if self.confirming_player_ws:
                 print(f"Confirmation timed out for {self.confirming_player_data['name']}")
@@ -281,29 +284,39 @@ class ConnectionManager:
             pass
 
     async def verify_transaction(self, signature: str, expected_payer: str) -> bool:
-        try:
-            # Fetch transaction
-            sig = solders.signature.Signature.from_string(signature)
-            tx = await solana_client.get_transaction(sig, max_supported_transaction_version=0)
-            
-            if not tx.value:
-                print("Transaction not found")
-                return False
+        print(f"Verifying transaction {signature}...")
+        for attempt in range(20): # Try for 40 seconds
+            try:
+                # Fetch transaction
+                sig = solders.signature.Signature.from_string(signature)
+                tx = await solana_client.get_transaction(
+                    sig, 
+                    max_supported_transaction_version=0,
+                    commitment=Confirmed
+                )
                 
-            # Basic Verification: Check if it transferred > 0.09 SOL to House
-            # We strictly should check amount, but for demo, just checking existence and receiver is House
-            # Check meta for errors
-            if tx.value.transaction.meta.err is not None:
-                print("Transaction has errors")
-                return False
+                if not tx.value:
+                    print(f"Attempt {attempt+1}: Transaction not found yet...")
+                    await asyncio.sleep(2)
+                    continue
+                    
+                # Basic Verification: Check if it transferred > 0.09 SOL to House
+                # We strictly should check amount, but for demo, just checking existence and receiver is House
+                # Check meta for errors
+                if tx.value.transaction.meta.err is not None:
+                    print("Transaction has errors")
+                    return False
+                    
+                # TODO: Deep check input/output amounts. 
+                # For hackathon speed: Assume if it exists and no error, it's good.
+                print(f"Transaction {signature} verified on attempt {attempt+1}!")
+                return True
+            except Exception as e:
+                print(f"Verification attempt {attempt+1} error: {e}")
+                await asyncio.sleep(2)
                 
-            # TODO: Deep check input/output amounts. 
-            # For hackathon speed: Assume if it exists and no error, it's good.
-            print(f"Transaction {signature} verified!")
-            return True
-        except Exception as e:
-            print(f"Verification failed: {e}")
-            return False
+        print("Verification timed out.")
+        return False
 
     async def payout(self, dest_pubkey_str: str, amount_lamports: int):
         try:
@@ -347,7 +360,19 @@ class ConnectionManager:
                 valid = await self.verify_transaction(signature, player_key)
                 if not valid:
                     print("Invalid Transaction! Game aborted.")
-                    # Should notify user
+                    # Cleanup to prevent stuck queue
+                    if self.confirmation_task:
+                        self.confirmation_task.cancel()
+                    self.confirming_player_ws = None
+                    self.confirming_player_data = None
+                    
+                    try:
+                        await websocket.send_text(json.dumps({"type": "match_timeout"}))
+                    except:
+                        pass
+                        
+                    await self.broadcast_game_update()
+                    await self.try_start_next_game()
                     return
 
             if self.confirmation_task:

@@ -26,9 +26,9 @@ async def receive_controls(websocket):
                     buttons = int.from_bytes(data[6:], byteorder='little')
                     
                     # Print status
-                    print(f"\rReceived: Analog={analog} Buttons={buttons:016b}   ", end="", flush=True)
-                else:
-                    print(f"\rReceived {len(data)} bytes (Unknown format)", end="", flush=True)
+                    #print(f"\rReceived: Analog={analog} Buttons={buttons:016b}   ", end="", flush=True)
+                #else:
+                    #print(f"\rReceived {len(data)} bytes (Unknown format)", end="", flush=True)
     except websockets.exceptions.ConnectionClosed:
         print("\nConnection closed (Receive)")
 
