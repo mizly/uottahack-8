@@ -44,6 +44,8 @@
             color: #f5f5f7;
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background-image: radial-gradient(circle at 50% 0%, #1a1a1a 0%, #000000 100%);
+            overflow: hidden;
+            /* Prevent scrolling during transition */
         }
 
         .glass-panel {
@@ -51,6 +53,12 @@
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-solid {
+            background: rgba(28, 28, 30, 0.95);
+            backdrop-filter: blur(40px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .glass-button {
@@ -103,13 +111,14 @@
         }
 
         .animate-fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
+            opacity: 0;
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
         }
 
         @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(10px);
+                transform: translateY(20px);
             }
 
             to {
@@ -117,210 +126,530 @@
                 transform: translateY(0);
             }
         }
+
+        /* Initial State for App Content */
+        #app-content {
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            pointer-events: none;
+        }
+
+        #app-content.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Landing Page Animations */
+        #landing-screen {
+            transition: opacity 0.6s ease-out, transform 0.8s cubic-bezier(0.6, 0.05, 0.1, 0.99);
+        }
+
+        #landing-screen.hidden-screen {
+            opacity: 0;
+            transform: scale(1.1);
+            pointer-events: none;
+        }
+
+        .liquid-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.6;
+            animation: float 20s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(10, 132, 255, 0.8) 0%, rgba(10, 132, 255, 0) 70%);
+            top: 20%;
+            left: 20%;
+            animation-delay: -2s;
+        }
+
+        .orb-2 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(175, 82, 222, 0.6) 0%, rgba(175, 82, 222, 0) 70%);
+            bottom: 10%;
+            right: 15%;
+            animation-duration: 25s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(48, 209, 88, 0.4) 0%, rgba(48, 209, 88, 0) 70%);
+            top: 60%;
+            left: 40%;
+            animation-duration: 18s;
+            animation-delay: -5s;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            100% {
+                transform: translate(40px, -40px) rotate(10deg);
+            }
+        }
+
+        /* Loadout Modal */
+        #loadout-modal {
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        #loadout-modal.hidden {
+            pointer-events: none;
+            opacity: 0;
+        }
+
+        .tank-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+
+        .tank-card:hover {
+            background-color: rgba(255, 255, 255, 0.08);
+            transform: translateY(-4px);
+        }
+
+        .tank-card.selected {
+            border-color: #0a84ff;
+            background-color: rgba(10, 132, 255, 0.1);
+            box-shadow: 0 0 20px rgba(10, 132, 255, 0.2);
+        }
+
+        .stat-bar-bg {
+            background: rgba(255, 255, 255, 0.1);
+            height: 4px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .stat-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 0.5s ease-out;
+        }
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col p-6 lg:p-12 overflow-x-hidden selection:bg-ios-blue selection:text-white">
+<body class="min-h-screen relative selection:bg-ios-blue selection:text-white">
 
-    <!-- Header / Nav -->
-    <header class="w-full max-w-7xl mx-auto flex justify-between items-center mb-8 animate-fade-in">
-        <div class="flex items-center gap-3">
-            <div
-                class="w-8 h-8 rounded-lg bg-ios-blue flex items-center justify-center text-white shadow-lg shadow-ios-blue/20">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2 1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+    <!-- Landing / Home Screen -->
+    <div id="landing-screen"
+        class="fixed inset-0 z-50 flex flex-col items-center justify-center overflow-hidden bg-black text-white">
+        <!-- Liquid Background -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="liquid-orb orb-1"></div>
+            <div class="liquid-orb orb-2"></div>
+            <div class="liquid-orb orb-3"></div>
+        </div>
+
+        <!-- Glass Card Content -->
+        <div
+            class="relative z-10 p-12 glass-panel rounded-[2rem] text-center max-w-md w-full mx-4 shadow-2xl border border-white/10 animate-fade-in">
+            <div class="mb-6 flex justify-center">
+                <div
+                    class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-ios-blue to-purple-600 flex items-center justify-center text-white shadow-lg shadow-ios-blue/30">
+                    <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+                    </svg>
+                </div>
+            </div>
+
+            <h1
+                class="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
+                RoboCommander</h1>
+            <p class="text-white/50 text-sm font-medium tracking-wide border-t border-white/5 py-3 mb-6">SECURE UPLINK
+                TERMINAL</p>
+
+            <button id="enter-btn"
+                class="w-full group relative overflow-hidden bg-white text-black py-4 rounded-xl font-semibold text-sm tracking-wide transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    ESTABLISH CONNECTION
+                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </span>
+                <div
+                    class="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                </div>
+            </button>
+        </div>
+
+        <div class="absolute bottom-8 text-white/20 text-xs tracking-widest font-mono uppercase">System Ready // v2.0
+        </div>
+    </div>
+
+    <!-- Loadout Selection Modal -->
+    <div id="loadout-modal"
+        class="fixed inset-0 z-40 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
+        <div class="glass-solid max-w-5xl w-full rounded-[2rem] p-8 shadow-2xl relative overflow-hidden">
+            <!-- Close Btn -->
+            <button onclick="closeLoadout()"
+                class="absolute top-6 right-6 p-2 rounded-full bg-white/5 hover:bg-white/10 text-white/50 hover:text-white transition-colors">
+                <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
-            </div>
-            <h1 class="text-xl font-medium tracking-tight text-white/90">RoboCommander</h1>
-        </div>
+            </button>
 
-        <div id="connection-status"
-            class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-ios-gray transition-all">
-            <!-- JS Inject -->
-            <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-pulse"></span>
-            <span>Connecting...</span>
-        </div>
-    </header>
+            <header class="text-center mb-10">
+                <h2 class="text-3xl font-semibold text-white mb-2">Select Your Chassis</h2>
+                <p class="text-white/50">Choose a loadout configuration for this mission.</p>
+            </header>
 
-    <main class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
-
-        <!-- Main Content: Video Feed & Controls Overlay -->
-        <div class="lg:col-span-8 space-y-6 animate-fade-in" style="animation-delay: 0.1s;">
-            <!-- Video Stage -->
-            <div class="relative w-full aspect-[4/3] bg-[#111] rounded-3xl overflow-hidden video-container group">
-                <!-- Live Badge -->
-                <div class="absolute top-6 left-6 flex items-center gap-2 z-20">
-                    <div
-                        class="px-2 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/5 text-[10px] uppercase font-bold tracking-wider text-white/80 flex items-center gap-1.5">
-                        <span class="relative flex h-1.5 w-1.5">
-                            <span
-                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-ios-red opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ios-red"></span>
-                        </span>
-                        Live Feed
-                    </div>
-                </div>
-
-                <!-- Video Element -->
-                <img id="video-feed" src="" alt="NO SIGNAL"
-                    class="w-full h-full object-cover opacity-90 transition-opacity duration-300">
-
-                <!-- Disconnected Overlay -->
-                <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 hidden"
-                    id="video-overlay">
-                    <div class="text-center space-y-2">
-                        <svg class="w-10 h-10 text-white/20 mx-auto" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <!-- Tank 1: Balanced -->
+                <div id="tank-vanguard" onclick="selectTank('vanguard')"
+                    class="tank-card selected bg-[#1c1c1e] rounded-2xl p-6 relative group">
+                    <div class="absolute top-4 right-4 text-ios-blue">
+                        <svg class="w-6 h-6 opacity-100 check-icon" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"></path>
                         </svg>
-                        <p class="text-white/40 text-sm font-medium tracking-wide">Waiting for Transmitter...</p>
+                    </div>
+                    <div
+                        class="h-32 mb-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl flex items-center justify-center">
+                        <span class="text-4xl">🛡️</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-1">Vanguard</h3>
+                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">Standard Issue</p>
+
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Speed</span><span>50%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-blue-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Damage</span><span>50%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-blue-500" style="width: 50%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1"><span>Fire
+                                    Rate</span><span>50%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-blue-500" style="width: 50%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Control Instructions Overlay (Bottom) -->
-                <div
-                    class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 transition-opacity opacity-0 group-hover:opacity-100 duration-500">
-                    <div
-                        class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
-                        <span class="text-white font-bold">WASD</span> MOVE
+                <!-- Tank 2: Speed -->
+                <div id="tank-interceptor" onclick="selectTank('interceptor')"
+                    class="tank-card bg-[#1c1c1e] rounded-2xl p-6 relative group">
+                    <div class="absolute top-4 right-4 text-ios-blue opacity-0 check-icon">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                     <div
-                        class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
-                        <span class="text-white font-bold">ARROWS</span> CAM
+                        class="h-32 mb-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl flex items-center justify-center">
+                        <span class="text-4xl">⚡</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-1">Interceptor</h3>
+                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">High Mobility</p>
+
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Speed</span><span>90%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-yellow-500" style="width: 90%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Damage</span><span>30%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-yellow-500" style="width: 30%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1"><span>Fire
+                                    Rate</span><span>80%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-yellow-500" style="width: 80%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tank 3: Heavy -->
+                <div id="tank-juggernaut" onclick="selectTank('juggernaut')"
+                    class="tank-card bg-[#1c1c1e] rounded-2xl p-6 relative group">
+                    <div class="absolute top-4 right-4 text-ios-blue opacity-0 check-icon">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                                clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                     <div
-                        class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
-                        <span class="text-white font-bold">SPACE</span> FIRE
+                        class="h-32 mb-4 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-xl flex items-center justify-center">
+                        <span class="text-4xl">🦍</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-white mb-1">Juggernaut</h3>
+                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">Heavy Ordnance</p>
+
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Speed</span><span>20%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-red-500" style="width: 20%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1">
+                                <span>Damage</span><span>95%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-red-500" style="width: 95%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs text-white/60 mb-1"><span>Fire
+                                    Rate</span><span>30%</span></div>
+                            <div class="stat-bar-bg">
+                                <div class="stat-bar-fill bg-red-500" style="width: 30%"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
+            <div class="flex justify-center">
+                <button onclick="confirmLoadout()"
+                    class="w-full max-w-sm bg-ios-blue hover:bg-[#0071e3] text-white font-bold py-4 rounded-xl transition-all shadow-lg shadow-ios-blue/20 transform hover:scale-105">
+                    DEPLOY UNIT
+                </button>
+            </div>
         </div>
+    </div>
 
-        <!-- Sidebar: Command Deck -->
-        <aside class="lg:col-span-4 space-y-6 animate-fade-in" style="animation-delay: 0.2s;">
 
-            <!-- Dashboard Card -->
-            <div class="glass-panel rounded-3xl p-6 flex flex-col gap-6 relative overflow-hidden">
-                <!-- Decorative Blur -->
+    <!-- Main Application wrap -->
+    <div id="app-content" class="min-h-screen flex flex-col p-6 lg:p-12 overflow-x-hidden">
+
+        <!-- Header / Nav -->
+        <header class="w-full max-w-7xl mx-auto flex justify-between items-center mb-8">
+            <div class="flex items-center gap-3">
                 <div
-                    class="absolute -top-10 -right-10 w-32 h-32 bg-ios-blue/20 blur-[60px] rounded-full pointer-events-none">
+                    class="w-8 h-8 rounded-lg bg-ios-blue flex items-center justify-center text-white shadow-lg shadow-ios-blue/20">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2 1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
+                    </svg>
+                </div>
+                <h1 class="text-xl font-medium tracking-tight text-white/90">RoboCommander</h1>
+            </div>
+
+            <div id="connection-status"
+                class="glass-panel px-3 py-1.5 rounded-full flex items-center gap-2 text-xs font-medium text-ios-gray transition-all">
+                <!-- JS Inject -->
+                <span class="w-1.5 h-1.5 rounded-full bg-ios-red animate-pulse"></span>
+                <span>Connecting...</span>
+            </div>
+        </header>
+
+        <main class="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-8 flex-1">
+
+            <!-- Main Content: Video Feed & Controls Overlay -->
+            <div class="lg:col-span-8 space-y-6" style="animation-delay: 0.1s;">
+                <!-- Video Stage -->
+                <div class="relative w-full aspect-[4/3] bg-[#111] rounded-3xl overflow-hidden video-container group">
+                    <!-- Live Badge -->
+                    <div class="absolute top-6 left-6 flex items-center gap-2 z-20">
+                        <div
+                            class="px-2 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/5 text-[10px] uppercase font-bold tracking-wider text-white/80 flex items-center gap-1.5">
+                            <span class="relative flex h-1.5 w-1.5">
+                                <span
+                                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-ios-red opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ios-red"></span>
+                            </span>
+                            Live Feed
+                        </div>
+                    </div>
+
+                    <!-- Video Element -->
+                    <img id="video-feed" src="" alt="NO SIGNAL"
+                        class="w-full h-full object-cover opacity-90 transition-opacity duration-300">
+
+                    <!-- Disconnected Overlay -->
+                    <div class="absolute inset-0 flex items-center justify-center bg-black/80 backdrop-blur-sm z-10 hidden"
+                        id="video-overlay">
+                        <div class="text-center space-y-2">
+                            <svg class="w-10 h-10 text-white/20 mx-auto" fill="none" viewBox="0 0 24 24"
+                                stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                    d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
+                            </svg>
+                            <p class="text-white/40 text-sm font-medium tracking-wide">Waiting for Transmitter...</p>
+                        </div>
+                    </div>
+
+                    <!-- Control Instructions Overlay (Bottom) -->
+                    <div
+                        class="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-4 transition-opacity opacity-0 group-hover:opacity-100 duration-500">
+                        <div
+                            class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
+                            <span class="text-white font-bold">WASD</span> MOVE
+                        </div>
+                        <div
+                            class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
+                            <span class="text-white font-bold">ARROWS</span> CAM
+                        </div>
+                        <div
+                            class="px-3 py-1.5 rounded-lg bg-black/40 backdrop-blur-md border border-white/10 text-xs text-white/70 font-mono">
+                            <span class="text-white font-bold">SPACE</span> FIRE
+                        </div>
+                    </div>
                 </div>
 
-                <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                    <h2 class="text-lg font-medium text-white/90">Mission Control</h2>
-                    <div id="status-display" class="hidden">
-                        <span id="player-status"
-                            class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-white/5 text-white/60">
-                            Spectating
-                        </span>
-                    </div>
-                </div>
+            </div>
 
-                <!-- Active Game Mode UI -->
-                <div id="game-active-panel" class="hidden space-y-5">
-                    <div class="flex justify-between items-end">
-                        <div class="text-left">
-                            <span class="block text-xs uppercase text-white/40 font-medium tracking-wider mb-1">Time
-                                Remaining</span>
-                            <span id="timer-display"
-                                class="text-4xl font-light tracking-tight tabular-nums text-ios-yellow">60</span>
-                        </div>
-                        <div class="text-right">
-                            <span class="block text-xs uppercase text-white/40 font-medium tracking-wider mb-1">Current
-                                Score</span>
-                            <span id="score-display"
-                                class="text-4xl font-light tracking-tight tabular-nums text-ios-green">0</span>
+            <!-- Sidebar: Command Deck -->
+            <aside class="lg:col-span-4 space-y-6" style="animation-delay: 0.2s;">
+
+                <!-- Dashboard Card -->
+                <div class="glass-panel rounded-3xl p-6 flex flex-col gap-6 relative overflow-hidden">
+                    <!-- Decorative Blur -->
+                    <div
+                        class="absolute -top-10 -right-10 w-32 h-32 bg-ios-blue/20 blur-[60px] rounded-full pointer-events-none">
+                    </div>
+
+                    <div class="flex justify-between items-center border-b border-white/5 pb-4">
+                        <h2 class="text-lg font-medium text-white/90">Mission Control</h2>
+                        <div id="status-display" class="hidden">
+                            <span id="player-status"
+                                class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-white/5 text-white/60">
+                                Spectating
+                            </span>
                         </div>
                     </div>
 
-                    <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
-                        <div class="flex items-center gap-3">
-                            <div
-                                class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold text-white/50">
-                                P
+                    <!-- Active Game Mode UI -->
+                    <div id="game-active-panel" class="hidden space-y-5">
+                        <div class="flex justify-between items-end">
+                            <div class="text-left">
+                                <span class="block text-xs uppercase text-white/40 font-medium tracking-wider mb-1">Time
+                                    Remaining</span>
+                                <span id="timer-display"
+                                    class="text-4xl font-light tracking-tight tabular-nums text-ios-yellow">60</span>
                             </div>
-                            <div>
-                                <div class="text-[10px] text-white/40 uppercase font-medium">Pilot</div>
-                                <div id="current-pilot-name" class="text-sm font-medium text-white/90">Anonymous</div>
+                            <div class="text-right">
+                                <span
+                                    class="block text-xs uppercase text-white/40 font-medium tracking-wider mb-1">Current
+                                    Score</span>
+                                <span id="score-display"
+                                    class="text-4xl font-light tracking-tight tabular-nums text-ios-green">0</span>
                             </div>
                         </div>
-                        <div class="h-2 w-2 rounded-full bg-ios-green animate-pulse"></div>
+
+                        <div class="p-3 rounded-xl bg-white/5 border border-white/5 flex items-center justify-between">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-8 h-8 rounded-full bg-gradient-to-br from-gray-700 to-gray-800 flex items-center justify-center text-xs font-bold text-white/50">
+                                    P
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-white/40 uppercase font-medium">Pilot</div>
+                                    <div id="current-pilot-name" class="text-sm font-medium text-white/90">Anonymous
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="h-2 w-2 rounded-full bg-ios-green animate-pulse"></div>
+                        </div>
+
+                        <!-- Active Controls -->
+                        <div class="pt-2 space-y-3">
+                            <button id="stop-btn" onclick="stopGame()"
+                                class="w-full py-3 rounded-xl bg-ios-red/10 text-ios-red font-medium text-sm hover:bg-ios-red hover:text-white transition-all duration-300 hidden">
+                                Abort Mission
+                            </button>
+
+                            <!-- Sim Controls -->
+                            <div id="sim-controls" class="grid grid-cols-2 gap-2 hidden">
+                                <button onclick="addScore(10)"
+                                    class="glass-button py-2 rounded-lg text-xs font-medium text-white/70 hover:text-white">
+                                    +10 Points
+                                </button>
+                                <button onclick="addScore(50)"
+                                    class="glass-button py-2 rounded-lg text-xs font-medium text-white/70 hover:text-white">
+                                    +50 Points
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Active Controls -->
-                    <div class="pt-2 space-y-3">
-                        <button id="stop-btn" onclick="stopGame()"
-                            class="w-full py-3 rounded-xl bg-ios-red/10 text-ios-red font-medium text-sm hover:bg-ios-red hover:text-white transition-all duration-300 hidden">
-                            Abort Mission
+                    <!-- Queue / Join Mode UI -->
+                    <div id="start-panel" class="space-y-4">
+                        <div class="space-y-2">
+                            <label class="text-xs text-white/40 font-medium uppercase tracking-wider ml-1">Operative
+                                ID</label>
+                            <input type="text" id="player-name" placeholder="Enter codename"
+                                class="w-full bg-[#1c1c1e] text-white placeholder-white/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ios-blue/50 focus:border-ios-blue/50 transition-all">
+                        </div>
+
+                        <button onclick="requestLoadout()" id="join-btn"
+                            class="w-full bg-ios-blue hover:bg-[#0071e3] text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-ios-blue/20 active:scale-[0.98]">
+                            Initialize Uplink
                         </button>
 
-                        <!-- Sim Controls -->
-                        <div id="sim-controls" class="grid grid-cols-2 gap-2 hidden">
-                            <button onclick="addScore(10)"
-                                class="glass-button py-2 rounded-lg text-xs font-medium text-white/70 hover:text-white">
-                                +10 Points
-                            </button>
-                            <button onclick="addScore(50)"
-                                class="glass-button py-2 rounded-lg text-xs font-medium text-white/70 hover:text-white">
-                                +50 Points
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Queue / Join Mode UI -->
-                <div id="start-panel" class="space-y-4">
-                    <div class="space-y-2">
-                        <label class="text-xs text-white/40 font-medium uppercase tracking-wider ml-1">Operative
-                            ID</label>
-                        <input type="text" id="player-name" placeholder="Enter codename"
-                            class="w-full bg-[#1c1c1e] text-white placeholder-white/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ios-blue/50 focus:border-ios-blue/50 transition-all">
-                    </div>
-
-                    <button onclick="joinQueue()" id="join-btn"
-                        class="w-full bg-ios-blue hover:bg-[#0071e3] text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-ios-blue/20 active:scale-[0.98]">
-                        Initialize Uplink
-                    </button>
-
-                    <!-- Queue Status -->
-                    <div id="queue-info" class="hidden pt-2">
-                        <div class="h-px w-full bg-white/5 mb-4"></div>
-                        <div class="flex items-start gap-3">
-                            <div class="mt-1 w-1.5 h-1.5 rounded-full bg-ios-yellow"></div>
-                            <div>
-                                <p class="text-xs font-medium text-white/80">Queue Active: <span
-                                        id="queue-count">0</span> pending</p>
-                                <p id="queue-names"
-                                    class="text-[10px] text-white/40 mt-1 leading-relaxed truncate max-w-[200px]"></p>
+                        <!-- Queue Status -->
+                        <div id="queue-info" class="hidden pt-2">
+                            <div class="h-px w-full bg-white/5 mb-4"></div>
+                            <div class="flex items-start gap-3">
+                                <div class="mt-1 w-1.5 h-1.5 rounded-full bg-ios-yellow"></div>
+                                <div>
+                                    <p class="text-xs font-medium text-white/80">Queue Active: <span
+                                            id="queue-count">0</span> pending</p>
+                                    <p id="queue-names"
+                                        class="text-[10px] text-white/40 mt-1 leading-relaxed truncate max-w-[200px]">
+                                    </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Leaderboard Card -->
-            <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col max-h-[400px]">
-                <h3 class="text-sm font-medium text-white/60 mb-4 uppercase tracking-wider px-1">Top Agents</h3>
+                <!-- Leaderboard Card -->
+                <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col max-h-[400px]">
+                    <h3 class="text-sm font-medium text-white/60 mb-4 uppercase tracking-wider px-1">Top Agents</h3>
 
-                <div class="overflow-y-auto pr-2 -mr-2 space-y-1">
-                    <table class="w-full text-left border-collapse">
-                        <!-- Header hidden for minimalist look -->
-                        <tbody id="leaderboard-body" class="text-sm">
-                            <!-- Injected rows -->
-                            <tr class="text-white/20">
-                                <td class="py-4 text-center text-xs italic">Connecting to database...</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <div class="overflow-y-auto pr-2 -mr-2 space-y-1">
+                        <table class="w-full text-left border-collapse">
+                            <!-- Header hidden for minimalist look -->
+                            <tbody id="leaderboard-body" class="text-sm">
+                                <!-- Injected rows -->
+                                <tr class="text-white/20">
+                                    <td class="py-4 text-center text-xs italic">Connecting to database...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-        </aside>
+            </aside>
 
-    </main>
+        </main>
+    </div>
 
     <script src="/static/app.js"></script>
 </body>

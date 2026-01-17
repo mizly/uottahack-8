@@ -122,13 +122,17 @@ class ConnectionManager:
             except:
                 pass
 
-    async def join_queue(self, websocket: WebSocket, name: str):
+    async def join_queue(self, websocket: WebSocket, name: str, loadout: dict = None):
         # Check if already in queue
         for p in self.waiting_queue:
             if p["ws"] == websocket:
                 return # Already in queue
 
-        entry = {"name": name or "Anonymous", "ws": websocket}
+        entry = {
+            "name": name or "Anonymous", 
+            "ws": websocket,
+            "loadout": loadout or {"id": "vanguard", "name": "Vanguard"} # Default
+        }
         self.waiting_queue.append(entry)
         await self.broadcast_game_update()
         
@@ -146,6 +150,8 @@ class ConnectionManager:
             self.game_state.start_time = time.time()
             self.game_state.score = 0
             self.game_state.player_name = next_player["name"]
+            # Store loadout in game_state if needed (can add a field to GameState dataclass or just log it for now)
+            print(f"Game Started for {self.game_state.player_name} with loadout {next_player['loadout'].get('name')}")
             
             print(f"Game Started for {self.game_state.player_name}")
             await self.broadcast_game_update()
@@ -215,7 +221,11 @@ async def websocket_endpoint(websocket: WebSocket, client_type: str):
                     action = data.get("action")
                     
                     if action == "join_queue":
-                        await manager.join_queue(websocket, data.get("name", "Player"))
+                        await manager.join_queue(
+                            websocket, 
+                            data.get("name", "Player"),
+                            data.get("loadout")
+                        )
                     elif action == "stop_game":
                         # Only current player can stop
                         if manager.current_player_ws == websocket:

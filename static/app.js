@@ -18,6 +18,31 @@ controllerState[5] = 0;
 controllerState[6] = 0;
 controllerState[7] = 0;
 
+// Landing Screen Logic
+const enterBtn = document.getElementById('enter-btn');
+if (enterBtn) {
+    enterBtn.addEventListener('click', () => {
+        const landingScreen = document.getElementById('landing-screen');
+        const appContent = document.getElementById('app-content');
+
+        // Animate out
+        landingScreen.classList.add('hidden-screen');
+
+        // Wait for animation slightly then show app
+        setTimeout(() => {
+            appContent.classList.add('active');
+
+            // Trigger entry animations for children if needed, or rely on CSS cascade
+            const animatedElements = document.querySelectorAll('.animate-fade-in');
+            animatedElements.forEach((el, index) => {
+                el.style.animationDelay = `${index * 0.1}s`;
+                el.style.animationPlayState = 'running';
+            });
+        }, 500);
+    });
+}
+
+
 // Keyboard State Tracking
 const keys = {
     w: false, s: false, a: false, d: false,
@@ -188,10 +213,63 @@ function renderLeaderboard(data) {
     `).join('');
 }
 
-// Global Game Functions
-window.joinQueue = () => {
+// ----- LOADOUT LOGIC -----
+let selectedLoadout = { id: 'vanguard', name: 'Vanguard' };
+
+window.requestLoadout = () => {
     myName = playerNameInput.value || "Anonymous";
-    sendJson({ action: "join_queue", name: myName });
+    if (!myName) {
+        alert("Please enter a name first.");
+        return;
+    }
+    // Open Modal
+    const modal = document.getElementById('loadout-modal');
+    modal.classList.remove('hidden');
+};
+
+window.closeLoadout = () => {
+    const modal = document.getElementById('loadout-modal');
+    modal.classList.add('hidden');
+};
+
+window.selectTank = (id) => {
+    // UI Update
+    document.querySelectorAll('.tank-card').forEach(card => {
+        card.classList.remove('selected');
+        // card.querySelector('.check-icon').classList.add('opacity-0'); // Simply toggle class on parent logic
+        const icon = card.querySelector('.check-icon');
+        if (icon) icon.classList.add('opacity-0');
+    });
+
+    const selectedCard = document.getElementById(`tank-${id}`);
+    if (selectedCard) {
+        selectedCard.classList.add('selected');
+        const icon = selectedCard.querySelector('.check-icon');
+        if (icon) icon.classList.remove('opacity-0');
+    }
+
+    // Data Update
+    let name = "Vanguard";
+    if (id === 'interceptor') name = "Interceptor";
+    if (id === 'juggernaut') name = "Juggernaut";
+
+    selectedLoadout = { id, name };
+};
+
+window.confirmLoadout = () => {
+    closeLoadout();
+    // Send join request with loadout
+    sendJson({
+        action: "join_queue",
+        name: myName,
+        loadout: selectedLoadout
+    });
+};
+
+// Deprecated direct join, kept for legacy or quick-start if needed
+window.joinQueue = () => {
+    // Redirect to loadout flow
+    window.requestLoadout();
 };
 
 window.stopGame = () => {
