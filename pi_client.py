@@ -11,8 +11,8 @@ import sys
 import serial
 
 # Configuration
-# SERVER_URL = "ws://10.167.168.92:8000/ws/pi"
-SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
+SERVER_URL = "ws://localhost:8000/ws/pi"
+#SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
 
 SERIAL_PORT = "/dev/ser1"
 BAUD_RATE = 115200

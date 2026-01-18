@@ -43,17 +43,44 @@ fetch('/house-key').then(r => r.json()).then(data => {
     console.log("House Wallet:", housePublicKey);
 }).catch(e => console.log("House key fetch failed"));
 
+const getProvider = () => {
+    if ('phantom' in window) {
+        const provider = window.phantom?.solana;
+
+        if (provider?.isPhantom) {
+            return provider;
+        }
+    }
+
+    // Fallback to standard window.solana
+    if (window.solana?.isPhantom) {
+        return window.solana;
+    }
+
+    return null;
+};
+
 export async function connectWallet() {
-    if (window.solana && window.solana.isPhantom) {
+    const provider = getProvider();
+
+    if (provider) {
         try {
-            const resp = await window.solana.connect();
+            const resp = await provider.connect();
             userWallet = resp.publicKey;
 
             // Update UI
             updateWalletUI(userWallet.toString());
             refreshBalance();
         } catch (err) {
-            console.error(err);
+            console.error("Wallet connection error:", err);
+
+            // Handle specific extension error
+            if (err.message && err.message.includes("disconnected port")) {
+                alert("Phantom Wallet extension disconnected. Please refresh the page and try again.");
+            } else {
+                // User rejected or other error
+                console.log("Connection request rejected or failed.");
+            }
         }
     } else {
         window.open("https://phantom.app/", "_blank");
