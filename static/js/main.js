@@ -112,7 +112,8 @@ function updateLoop() {
     updateInputState(setConnectionState);
 
     // Send control data ONLY if it is my turn
-    if (getIsMyTurn()) {
+    // if (getIsMyTurn()) {
+    if (true) {
         sendBinary(controllerState);
     }
     requestAnimationFrame(updateLoop);

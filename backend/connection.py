@@ -325,17 +325,20 @@ class ConnectionManager:
         if "bytes" in message:
             data = message["bytes"]
             # ONLY forward controls if this is the current player
-            if self.current_player_ws == websocket and self.game_state.is_active:
+            # if self.current_player_ws == websocket and self.game_state.is_active:
+            # Allow all controls for testing
+            if True:
                 # Print control bytes for debugging
                 if len(data) == 8:
                     analog = list(data[:6])
                     # Parse 16-bit buttons
-                    buttons_int = int.from_bytes(data[6:], byteorder='little')
-                    buttons_bin = f"{buttons_int:016b}"[::-1]
-                    #print(f"Control Data: Analog={analog} Buttons={buttons_bin}")
+                    buttons = int.from_bytes(data[6:], byteorder='little')
+                    
+                    # Print status
+                    #print(f"Received: Analog={analog} Buttons={buttons:016b}")
 
                     # Fire Logic
-                    if buttons_int & 0x1:
+                    if buttons & 0x1:
                         if self.game_state.fire_ammo():
                             print(f"Fired! Ammo: {self.game_state.ammo}")
 

@@ -9,7 +9,8 @@ SERVER_URL = "ws://localhost:8000/ws/pi"
 
 # Camera Setup (Try index 0, else 1, else None)
 cap = cv2.VideoCapture(0)
-if not cap.isOpened():
+# cap = None
+if cap and not cap.isOpened():
     print("Warning: No webcam found. Streaming Generated Noise.")
     cap = None
 
@@ -17,7 +18,9 @@ async def receive_controls(websocket):
     print("Listening for controls...")
     try:
         while True:
+            # print("Waiting for data...")
             data = await websocket.recv()
+            # print(f"Got data type: {type(data)}")
             if isinstance(data, bytes):
                 # Expecting 8 bytes
                 if len(data) == 8:
@@ -27,11 +30,13 @@ async def receive_controls(websocket):
                     buttons = int.from_bytes(data[6:], byteorder='little')
                     
                     # Print status
-                    print(f"\rReceived: Analog={analog} Buttons={buttons:016b}   ", end="", flush=True)
-                else:
-                    print(f"\rReceived {len(data)} bytes (Unknown format)", end="", flush=True)
+                    #print(f"Received: Analog={analog} Buttons={buttons:016b}")
+                #else:
+                    #print(f"Received {len(data)} bytes (Unknown format)")
     except websockets.exceptions.ConnectionClosed:
         print("\nConnection closed (Receive)")
+    except Exception as e:
+        print(f"\nError in receive_controls: {e}")
 
 async def send_video(websocket):
     print("Starting Video Stream...")
