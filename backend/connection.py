@@ -351,6 +351,11 @@ class ConnectionManager:
                                 # Check Win Condition (Keep going)
                                 if self.game_state.is_ranked and self.game_state.score >= WIN_THRESHOLD:
                                     print("Win Threshold Reached! (Continuing...)")
+                            
+                            # Auto-end if out of ammo
+                            if self.game_state.ammo <= 0:
+                                print(f"PLAYER {self.game_state.player_name} OUT OF AMMO! Ending session.")
+                                await self.end_game()
 
                 await self.broadcast_to_pi(data)
             

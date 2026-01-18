@@ -17,6 +17,7 @@ let currentSpeed = 0;
 let lastScore = 0; // Track score for animation
 
 export function initHUD() {
+    console.log("[HUD] Initializing...");
     hudOverlay = document.getElementById('hud-overlay');
     crosshair = document.querySelector('.hud-crosshair');
     ammoCount = document.getElementById('hud-ammo-count');
@@ -26,6 +27,8 @@ export function initHUD() {
     cooldownBar = document.getElementById('hud-cooldown-bar');
     muzzleFlash = document.querySelector('.muzzle-flash');
     enemyPanel = document.getElementById('hud-enemy-panel');
+
+    console.log(`[HUD] Init complete. CooldownBar: ${!!cooldownBar}, MuzzleFlash: ${!!muzzleFlash}`);
 }
 
 let lastFireTime = 0;
@@ -63,10 +66,6 @@ export function updateHUD(gameState, inputState) {
             console.log(`[HUD] Score increased! Old: ${lastScore}, New: ${gameState.score}, Diff: ${diff}`);
             triggerScoreAnimation(diff);
         }
-        // Only update lastScore if we actually have a score (prevent reset on empty state)
-        // But gameState.score check handles undefined.
-        // Also check if we just initialized (lastScore=0), maybe we shouldn't animate initial load?
-        // For now, let's just log.
         lastScore = gameState.score;
     }
 
@@ -96,7 +95,6 @@ export function updateHUD(gameState, inputState) {
                 if (el) {
                     const isDead = e.hp <= 0;
 
-                    // Update classes for dead state
                     if (isDead) {
                         el.className = "bg-black/20 border-white/5 opacity-30 grayscale rounded-lg p-1.5 transition-all duration-500";
                     } else {
@@ -123,7 +121,7 @@ export function updateHUD(gameState, inputState) {
         }
     }
 
-    // 2. Simulate Speedometer
+    // 3. Simulate Speedometer
     const forwardInput = (inputState.length !== undefined && inputState[1] !== undefined)
         ? Math.abs(inputState[1] - 127)
         : (inputState.axes ? Math.abs((inputState.axes[1] || 0) * 127) : 0);
@@ -148,18 +146,24 @@ export function attemptFire() {
 
     lastFireTime = now;
 
+    // Lazy load if missing (failsafe)
+    if (!cooldownBar) cooldownBar = document.getElementById('hud-cooldown-bar');
+
     // Cooldown Animation
     if (cooldownBar) {
+        // Stop current animation
+        cooldownBar.getAnimations().forEach(anim => anim.cancel());
+
         // Reset to 0 with no transition
         cooldownBar.style.transition = 'none';
         cooldownBar.style.width = '0%';
-
-        // Force reflow
-        void cooldownBar.offsetWidth;
+        cooldownBar.offsetHeight; // Force reflow
 
         // Animate to full
         cooldownBar.style.transition = `width ${cooldownDuration}ms linear`;
         cooldownBar.style.width = '100%';
+    } else {
+        console.warn("[HUD] Cooldown bar element missing!");
     }
 
     triggerFireVFX();
@@ -167,23 +171,29 @@ export function attemptFire() {
 }
 
 function triggerFireVFX() {
+    // Lazy load if missing
+    if (!muzzleFlash) muzzleFlash = document.querySelector('.muzzle-flash');
+    const container = document.querySelector('.video-container');
+
+    console.log(`[HUD] Triggering VFX. FlashEl: ${!!muzzleFlash}, ContainerEl: ${!!container}`);
+
     if (muzzleFlash) {
         muzzleFlash.classList.remove('active');
         void muzzleFlash.offsetWidth; // Force reflow
         muzzleFlash.classList.add('active');
+    }
 
-        const container = document.querySelector('.video-container');
-        if (container) {
-            container.animate([
-                { transform: 'translate(0,0)' },
-                { transform: 'translate(-2px, 2px)' },
-                { transform: 'translate(1px, -1px)' },
-                { transform: 'translate(0,0)' }
-            ], {
-                duration: 100,
-                iterations: 1
-            });
-        }
+    if (container) {
+        container.animate([
+            { transform: 'translate(0,0)' },
+            { transform: 'translate(-3px, 3px)' },
+            { transform: 'translate(3px, -3px)' },
+            { transform: 'translate(-1px, 1px)' },
+            { transform: 'translate(0,0)' }
+        ], {
+            duration: 100,
+            iterations: 1
+        });
     }
 }
 
