@@ -16,7 +16,7 @@ const int StepA = A0;
 const int DirA  = A1;
 
 const int MAX_SPEED = 127;
-const int BASE_STEP_DELAY = 600; // µs
+const int BASE_STEP_DELAY = 200; // µs
 
 const int StepPins[4] = {StepX, StepY, StepZ, StepA};
 const int DirPins[4]  = {DirX,  DirY,  DirZ,  DirA};
@@ -38,10 +38,21 @@ const int PAN_MAX  = 180;
 const int TILT_MIN = 20;
 const int TILT_MAX = 160;
 
+// Maximum degrees the servo will move PER update loop when joystick is at full deflection
+// Tweak these two values to control how fast the gimbal responds.
+const float PAN_STEP_MAX_DEG  = 0.2; // degrees per loop at full joystick deflection
+const float TILT_STEP_MAX_DEG = 0.2; // degrees per loop at full joystick deflection
+
+const int TRIG_DEADZONE = 8; // small deadzone for triggers to avoid tiny unintended rotations
+
 const int JOY_DEADZONE = 8;
 
 Servo panServo;
 Servo tiltServo;
+
+// Current servo angles (kept as floats for smooth incremental updates)
+float currentPan = 90.0;
+float currentTilt = 90.0;
 
 /* =====================================================
    ================= CONTROLLER STATE ==================
@@ -64,8 +75,12 @@ void setup() {
   panServo.attach(PAN_SERVO_PIN);
   tiltServo.attach(TILT_SERVO_PIN);
 
-  panServo.write(90);
-  tiltServo.write(90);
+  // Ensure starting angles are within configured limits
+  currentPan = constrain(currentPan, PAN_MIN, PAN_MAX);
+  currentTilt = constrain(currentTilt, TILT_MIN, TILT_MAX);
+
+  panServo.write((int)currentPan);
+  tiltServo.write((int)currentTilt);
 
   Serial.begin(115200);
 }
@@ -117,6 +132,30 @@ int* holonomicXDrive(float angleDeg, float magnitude) {
 }
 
 void setMotorSpeeds(int speeds[4]) {
+  // Simple flat trigger-based adjustment:
+  // left trigger adds a flat positive value to each motor, right trigger subtracts a flat value.
+  // triggerAdd = (lt - rt) / 255 * ROTATION_MAX_SPEED
+  if (lt > TRIG_DEADZONE) {
+    speeds[0] += lt;
+    speeds[1] -= lt;
+    speeds[2] += lt;
+    speeds[3] -= lt;
+  }
+
+  if (rt > TRIG_DEADZONE) {
+    speeds[0] -= rt;
+    speeds[1] += rt;
+    speeds[2] -= rt;
+    speeds[3] += rt;
+  }
+
+    // Explicitly clamp to allowed range immediately after trigger adjustment
+    for (int i = 0; i < 4; i++) {
+      if (speeds[i] > MAX_SPEED) speeds[i] = MAX_SPEED;
+      if (speeds[i] < -MAX_SPEED) speeds[i] = -MAX_SPEED;
+    }
+
+  // Existing direction inversion for motor wiring
   speeds[1] *= -1;
   speeds[3] *= -1;
 
@@ -158,15 +197,20 @@ float vectorMagnitude(int x, int y) {
 void updateGimbalFromJoystick() {
   int panJoy  = INVERT_PAN  ? -rx : rx;
   int tiltJoy = INVERT_TILT ? -ry : ry;
+  if (abs(panJoy) < JOY_DEADZONE) panJoy = 0;
+  if (abs(tiltJoy) < JOY_DEADZONE) tiltJoy = 0;
 
-  panServo.write(mapJoystickToServo(panJoy,  PAN_MIN,  PAN_MAX));
-  tiltServo.write(mapJoystickToServo(tiltJoy, TILT_MIN, TILT_MAX));
+  // Scale joystick (-127..127) to a per-loop degree delta based on configured max step
+  float panDelta  = (panJoy  / 127.0) * PAN_STEP_MAX_DEG;
+  float tiltDelta = (tiltJoy / 127.0) * TILT_STEP_MAX_DEG;
+
+  currentPan  = constrain(currentPan  + panDelta,  PAN_MIN,  PAN_MAX);
+  currentTilt = constrain(currentTilt + tiltDelta, TILT_MIN, TILT_MAX);
+
+  panServo.write((int)round(currentPan));
+  tiltServo.write((int)round(currentTilt));
 }
 
-int mapJoystickToServo(int joy, int minA, int maxA) {
-  if (abs(joy) < JOY_DEADZONE) joy = 0;
-  return constrain(map(joy, -127, 127, minA, maxA), minA, maxA);
-}
 
 /* =====================================================
    ================= SERIAL INPUT ======================
@@ -183,8 +227,9 @@ void readControllerPacket() {
   rx = (int8_t)buf[2];
   ry = (int8_t)buf[3];
 
-  lt = map(buf[4], 0, 255, 0, 127);
-  rt = map(buf[5], 0, 255, 0, 127);
+  // Keep triggers as raw 0..255 values for smooth analog scaling
+  lt = buf[4];
+  rt = buf[5];
 
   buttons = ((uint16_t)buf[6] << 8) | buf[7];
 }
