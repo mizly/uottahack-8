@@ -1,4 +1,4 @@
-import { connect, resetWatchdog, sendBinary } from './network.js';
+import { connect, resetWatchdog, sendBinary, sendPing } from './network.js?v=2';
 import { updateInputState, controllerState } from './input.js?v=14';
 import { drawQRCodes } from './cv.js';
 import {
@@ -18,8 +18,9 @@ import {
     stopGame,
     addScore,
     closeGameOver,
-    dismissQueueModal // Added
-} from './ui.js?v=16';
+    dismissQueueModal, // Added
+    updatePingDisplay
+} from './ui.js?v=17';
 import { connectWallet } from './wallet.js';
 
 // Expose functions to global scope for HTML event handlers
@@ -80,6 +81,9 @@ function onMessage(event) {
                 showGameOver(data.stats);
             } else if (data.type === 'qr_detected') {
                 drawQRCodes(data.data);
+            } else if (data.type === 'pong') {
+                const latency = Date.now() - data.timestamp;
+                updatePingDisplay(latency);
             }
         } catch (e) {
             console.error("Failed to parse JSON", e);
@@ -87,9 +91,28 @@ function onMessage(event) {
     } else {
         // Assume Binary (Blob or ArrayBuffer)
         if (event.data instanceof Blob) {
-            const url = URL.createObjectURL(event.data);
-            videoFeed.onload = () => URL.revokeObjectURL(url);
-            videoFeed.src = url;
+            // New Format: [8 bytes timestamp][JPEG Data]
+            if (event.data.size > 8) {
+                const timestampBlob = event.data.slice(0, 8);
+                const imageBlob = event.data.slice(8);
+
+                // Read timestamp (Async)
+                timestampBlob.arrayBuffer().then(buffer => {
+                    const view = new DataView(buffer);
+                    const serverTime = view.getFloat64(0, true); // Little Endian
+                    const latency = Date.now() - serverTime;
+                    updatePingDisplay(latency);
+                }).catch(e => console.error("Timestamp read error", e));
+
+                const url = URL.createObjectURL(imageBlob);
+                videoFeed.onload = () => URL.revokeObjectURL(url);
+                videoFeed.src = url;
+            } else {
+                // Fallback for old format or noise
+                const url = URL.createObjectURL(event.data);
+                videoFeed.onload = () => URL.revokeObjectURL(url);
+                videoFeed.src = url;
+            }
 
             // Hide overlay on frame receive
             videoOverlay.classList.add('hidden');
@@ -108,6 +131,7 @@ function onClose() {
     // Watchdog cleared by network.js calling connect again
 }
 
+let lastPingTime = 0;
 function updateLoop() {
     updateInputState(setConnectionState);
 
@@ -116,6 +140,14 @@ function updateLoop() {
     if (true) {
         sendBinary(controllerState);
     }
+
+    // Send Ping every 1s
+    const now = Date.now();
+    if (now - lastPingTime > 1000) {
+        sendPing();
+        lastPingTime = now;
+    }
+
     requestAnimationFrame(updateLoop);
 }
 

@@ -48,3 +48,7 @@ export function resetWatchdog(callback, timeoutMs = 3000) {
 export function clearWatchdog() {
     if (frameWatchdog) clearTimeout(frameWatchdog);
 }
+
+export function sendPing() {
+    sendJson({ action: "ping", timestamp: Date.now() });
+}

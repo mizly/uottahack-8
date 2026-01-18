@@ -1,4 +1,4 @@
-import { sendJson } from './network.js';
+import { sendJson } from './network.js?v=2';
 import { processTransaction, connectWallet, getUserWallet } from './wallet.js';
 import { initHUD, updateHUD } from './hud.js?v=16';
 import { controllerState } from './input.js?v=14';
@@ -218,6 +218,28 @@ export function updateGameState(state) {
     }
 
     renderLeaderboard(state.leaderboard);
+}
+
+export function updatePingDisplay(latency) {
+    const pingEl = document.getElementById('hud-ping');
+    if (pingEl) {
+        const value = Math.round(Math.max(0, latency));
+        const text = `${value}ms`;
+        const label = pingEl.querySelector('.label');
+        const val = pingEl.querySelector('.value');
+
+        if (val) val.textContent = text;
+
+        // Color Logic per user request
+        let colorClass = 'text-ios-green'; // Default < 100
+        if (value >= 100 && value < 200) {
+            colorClass = 'text-ios-yellow';
+        } else if (value >= 200) {
+            colorClass = 'text-ios-red';
+        }
+
+        if (val) val.className = `value font-mono text-xl tracking-widest ${colorClass}`;
+    }
 }
 
 function renderLeaderboard(data) {

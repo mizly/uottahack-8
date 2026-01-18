@@ -4,6 +4,8 @@ import cv2
 import numpy as np
 import time
 
+import struct
+
 SERVER_URL = "ws://localhost:8000/ws/pi"
 # SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
 
@@ -43,6 +45,9 @@ async def send_video(websocket):
     try:
         while True:
             if cap:
+                # Clear buffer to get the latest frame
+                for _ in range(5):
+                    cap.grab()
                 ret, frame = cap.read()
                 if not ret:
                     # If camera fails, fallback to noise
@@ -56,8 +61,12 @@ async def send_video(websocket):
             # Compress to JPEG
             _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
             
+            # Prepend Timestamp (double, 8 bytes)
+            timestamp = time.time() * 1000 # ms
+            packed_time = struct.pack('<d', timestamp)
+            
             # Send via WebSocket
-            await websocket.send(buffer.tobytes())
+            await websocket.send(packed_time + buffer.tobytes())
             
             # Limit FPS ~30
             await asyncio.sleep(0.033)

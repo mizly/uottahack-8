@@ -372,6 +372,11 @@ class ConnectionManager:
                 # Allow sim only if playing
                 if self.current_player_ws == websocket:
                     await self.add_score(data.get("score", 0))
+            elif action == "ping":
+                await websocket.send_text(json.dumps({
+                    "type": "pong",
+                    "timestamp": data.get("timestamp")
+                }))
 
     async def process_pi_message(self, websocket: WebSocket, message: dict):
         """Handle incoming messages from PI"""
@@ -385,32 +390,52 @@ class ConnectionManager:
             #if self.frame_count % 30 == 0:
              #   print(f"Server received video frame {self.frame_count} ({len(data)} bytes)")
 
-            # 1. Forward raw video to clients
+            # 1. Forward raw video to clients (Data now includes 8-byte timestamp header)
+            # Forward AS IS so client can measure latency
             await self.broadcast_to_clients(data)
             
-            # 2. Server-side CV processing (Offloaded)
+            # 2. Server-side CV processing (Offloaded & Non-Blocking)
             try:
-                # Process every 3rd frame (Offloaded to thread to prevent loop blocking)
-                if self.frame_count % 3 == 0:
-                    loop = asyncio.get_running_loop()
-                    # Run blocking CV code in a thread pool
-                    qr_results = await loop.run_in_executor(None, process_frame_for_qr, data)
-                    
-                    # Broadcast results (even if empty, to clear previous boxes)
-                    json_payload = json.dumps({
-                        "type": "qr_detected",
-                        "data": qr_results
-                    })
-                    
-                    # Broadcast to all clients
-                    for connection in self.active_connections:
-                        try:
-                            await connection.send_text(json_payload)
-                        except:
-                            pass
+                # Only start CV if not already running (Fire and Forget)
+                if not hasattr(self, 'is_cv_running'):
+                    self.is_cv_running = False
+                
+                if not self.is_cv_running and self.frame_count % 3 == 0:
+                    self.is_cv_running = True
+                    # Strip 8-byte timestamp for CV
+                    if len(data) > 8:
+                        image_data = data[8:]
+                        asyncio.create_task(self.run_cv_task(image_data))
+                    else:
+                        self.is_cv_running = False
                             
             except Exception as e:
-                 print(f"CV Error: {e}")
+                 print(f"CV Dispatch Error: {e}")
         
         elif "text" in message:
             print(f"Warning: Received TEXT from Pi: {message['text']}")
+
+    async def run_cv_task(self, data):
+        try:
+            loop = asyncio.get_running_loop()
+            # Run blocking CV code in a thread pool
+            qr_results = await loop.run_in_executor(None, process_frame_for_qr, data)
+            
+            # Broadcast results
+            json_payload = json.dumps({
+                "type": "qr_detected",
+                "data": qr_results
+            })
+            
+            # Broadcast to all clients
+            for connection in self.active_connections:
+                try:
+                    await connection.send_text(json_payload)
+                except:
+                    pass
+        except Exception as e:
+            print(f"CV Task Error: {e}")
+        finally:
+            self.is_cv_running = False
+        
+
