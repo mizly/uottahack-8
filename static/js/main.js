@@ -1,5 +1,5 @@
 import { connect, resetWatchdog, sendBinary } from './network.js';
-import { updateInputState, controllerState } from './input.js';
+import { updateInputState, controllerState } from './input.js?v=10';
 import { drawQRCodes } from './cv.js';
 import {
     updateGameState,
@@ -19,7 +19,7 @@ import {
     addScore,
     closeGameOver,
     dismissQueueModal // Added
-} from './ui.js';
+} from './ui.js?v=10';
 import { connectWallet } from './wallet.js';
 
 // Expose functions to global scope for HTML event handlers

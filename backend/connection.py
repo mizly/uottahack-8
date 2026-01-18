@@ -112,7 +112,9 @@ class ConnectionManager:
             "score": self.game_state.score,
             "player": self.game_state.player_name,
             "queue": [p["name"] for p in self.waiting_queue],
-            "leaderboard": sorted(leaderboard, key=lambda x: x['score'], reverse=True)[:10]
+            "leaderboard": sorted(leaderboard, key=lambda x: x['score'], reverse=True)[:10],
+            "ammo": self.game_state.ammo,
+            "max_ammo": self.game_state.max_ammo
         }
         
         json_payload = json.dumps(payload)
@@ -245,17 +247,15 @@ class ConnectionManager:
             self.current_player_ws = websocket
             self.confirming_player_ws = None
             
-            self.game_state.is_active = True
-            self.game_state.start_time = time.time()
-            self.game_state.score = 0
-            self.game_state.player_name = self.confirming_player_data["name"]
-            self.game_state.player_class = loadout.get("name", "Vanguard")
+            p_id = loadout.get("id", "vanguard")
+            self.game_state.init_game(
+                name=self.confirming_player_data["name"],
+                mode=mode,
+                p_class=p_id,
+                key=player_key
+            )
             
-            # Store Mode
-            self.game_state.is_ranked = (mode == "ranked")
-            self.game_state.player_key = player_key
-            
-            print(f"Game Started for {self.game_state.player_name} (Mode: {mode})")
+            print(f"Game Started for {self.game_state.player_name} (Mode: {mode}, Class: {p_id})")
             await self.broadcast_game_update()
             
             asyncio.create_task(self.game_timer())
@@ -332,6 +332,11 @@ class ConnectionManager:
                     buttons_int = int.from_bytes(data[6:], byteorder='little')
                     buttons_bin = f"{buttons_int:016b}"[::-1]
                     print(f"Control Data: Analog={analog} Buttons={buttons_bin}")
+
+                    # Fire Logic
+                    if buttons_int & 0x1:
+                        if self.game_state.fire_ammo():
+                            print(f"Fired! Ammo: {self.game_state.ammo}")
 
                 await self.broadcast_to_pi(data)
             

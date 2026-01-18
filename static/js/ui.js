@@ -1,5 +1,7 @@
 import { sendJson } from './network.js';
 import { processTransaction, connectWallet, getUserWallet } from './wallet.js';
+import { initHUD, updateHUD } from './hud.js?v=10';
+import { controllerState } from './input.js?v=10';
 
 // DOM Elements
 export const videoFeed = document.getElementById('video-feed');
@@ -195,6 +197,17 @@ export function updateGameState(state) {
         if (gameActivePanel) gameActivePanel.classList.add('hidden');
     }
 
+    // Update HUD
+    const hudOverlay = document.getElementById('hud-overlay');
+    if (hudOverlay) {
+        if (state.active) {
+            hudOverlay.classList.remove('opacity-0');
+            updateHUD(state, controllerState);
+        } else {
+            hudOverlay.classList.add('opacity-0');
+        }
+    }
+
     // Update Queue Info
     if (state.queue.length > 0) {
         if (queueInfo) queueInfo.classList.remove('hidden');
@@ -215,17 +228,20 @@ function renderLeaderboard(data) {
     }
 
     leaderboardBody.innerHTML = data.map((entry, index) => {
-        const className = entry.class || 'Vanguard';
+        const rawClass = entry.class || 'vanguard';
+        const className = rawClass.toLowerCase();
         let icon = '🛡️';
         let styleClass = 'text-blue-400 bg-blue-500/10 border-blue-500/20';
 
-        if (className === 'Interceptor') {
+        if (className === 'interceptor') {
             icon = '⚡';
             styleClass = 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
-        } else if (className === 'Juggernaut') {
+        } else if (className === 'juggernaut') {
             icon = '🦍';
             styleClass = 'text-red-400 bg-red-500/10 border-red-500/20';
         }
+
+        const displayName = className.charAt(0).toUpperCase() + className.slice(1);
 
         return `
         <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
@@ -234,7 +250,7 @@ function renderLeaderboard(data) {
             <td class="py-3 text-right">
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md border text-[10px] font-medium uppercase tracking-wider ${styleClass}">
                     <span class="text-xs">${icon}</span>
-                    <span class="hidden sm:inline">${className}</span>
+                    <span class="hidden sm:inline">${displayName}</span>
                 </span>
             </td>
             <td class="py-3 pr-3 text-right text-ios-blue font-semibold text-sm w-16">${entry.score}</td>
@@ -466,6 +482,7 @@ window.abortLoadout = abortLoadout;
 
 // Initialize UI Listeners
 (function initListeners() {
+    initHUD();
     const modal = document.getElementById('loadout-modal');
     if (modal) {
         // Backdrop click
