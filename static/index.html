@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RoboCommander Pro</title>
+    <title>gurt.tech // specifically for response-y things</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Solana Web3.js -->
@@ -273,19 +273,19 @@
             </div>
 
             <h1
-                class="text-3xl font-bold tracking-tight mb-2 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70">
-                RoboCommander</h1>
-            <p class="text-white/50 text-sm font-medium tracking-wide border-t border-white/5 py-3 mb-6">SECURE UPLINK
-                TERMINAL</p>
+                class="text-4xl font-black tracking-tighter mb-1 bg-clip-text text-transparent bg-gradient-to-r from-ios-blue to-purple-400">
+                gurt.tech</h1>
+            <p class="text-white/40 text-xs font-bold tracking-[0.2em] border-t border-white/5 py-4 mb-6">GROUND UNIT
+                RESPONSE TANK</p>
 
             <button id="enter-btn"
-                class="w-full group relative overflow-hidden bg-white text-black py-4 rounded-xl font-semibold text-sm tracking-wide transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                class="w-full group relative overflow-hidden bg-white text-black py-4 rounded-xl font-bold text-sm tracking-wide transition-transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                 <span class="relative z-10 flex items-center justify-center gap-2">
-                    ESTABLISH CONNECTION
-                    <svg class="w-4 h-4 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24"
+                    ESTABLISH GURT-LINK
+                    <svg class="w-4 h-4 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24"
                         stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
                     </svg>
                 </span>
                 <div
@@ -294,7 +294,8 @@
             </button>
         </div>
 
-        <div class="absolute bottom-8 text-white/20 text-xs tracking-widest font-mono uppercase">System Ready // v2.0
+        <div class="absolute bottom-8 text-white/10 text-[10px] tracking-[0.5em] font-mono uppercase">Gurt Engine //
+            v6.9.420
         </div>
     </div>
 
@@ -312,12 +313,12 @@
                 </svg>
             </button>
 
-            <div class="text-4xl mb-4">⏳</div>
-            <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">DEPLOYMENT QUEUE</h3>
-            <p class="text-white/60 mb-6 font-light">There are operatives ahead of you.</p>
+            <div class="text-5xl mb-4">🐢</div>
+            <h3 class="text-2xl font-bold text-white mb-2 tracking-wide">WAITING ROOM</h3>
+            <p class="text-white/60 mb-6 font-light">Hold your gurts, someone else is driving.</p>
 
             <div class="bg-white/5 rounded-xl p-4 mb-6 border border-white/5">
-                <div class="text-sm text-white/40 uppercase tracking-widest mb-1">Estimated Wait</div>
+                <div class="text-[10px] text-white/30 uppercase font-black tracking-widest mb-1">Time until Gurt</div>
                 <div id="queue-eta" class="text-3xl font-mono text-ios-yellow font-bold">01:30</div>
             </div>
 
@@ -349,11 +350,11 @@
                 <div class="inline-flex bg-white/5 rounded-full p-1 mb-6 border border-white/5">
                     <button id="mode-casual" onclick="setMode('casual')"
                         class="px-6 py-2 rounded-full text-sm font-medium transition-all bg-ios-blue text-white shadow-lg">
-                        Casual
+                        Just for Fun
                     </button>
                     <button id="mode-ranked" onclick="setMode('ranked')"
                         class="px-6 py-2 rounded-full text-sm font-medium transition-all text-white/50 hover:text-white">
-                        Ranked
+                        Ranked (Serious)
                     </button>
                 </div>
 
@@ -361,15 +362,15 @@
                     class="hidden mb-4 p-4 rounded-xl bg-gradient-to-r from-ios-yellow/10 to-transparent border border-ios-yellow/20 max-w-md mx-auto">
                     <div class="flex items-center justify-between text-ios-yellow">
                         <span class="flex items-center gap-2 text-sm font-semibold">
-                            ⚠️ RANKED MATCH
+                            ⚠️ GAMER MODE ACTIVE
                         </span>
-                        <span class="font-mono text-sm">Entry: 0.1 SOL</span>
+                        <span class="font-mono text-sm">Cost: 0.1 SOL</span>
                     </div>
                 </div>
 
-                <h2 class="text-3xl font-semibold text-white mb-2">Select Your Chassis</h2>
-                <p class="text-white/50">Confirm deployment in <span id="loadout-timer"
-                        class="text-ios-yellow font-mono font-bold">30</span>s</p>
+                <h2 class="text-3xl font-black text-white mb-2">WHICH GURT ARE YOU?</h2>
+                <p class="text-white/40 text-sm italic">Hurry up! <span id="loadout-timer"
+                        class="text-ios-yellow font-mono font-bold">30</span> seconds left!</p>
             </header>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
@@ -387,8 +388,8 @@
                         class="h-32 mb-4 bg-gradient-to-br from-blue-500/20 to-indigo-500/20 rounded-xl flex items-center justify-center">
                         <span class="text-4xl">🛡️</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Vanguard</h3>
-                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">Standard Issue</p>
+                    <h3 class="text-xl font-black text-white mb-1">Big Gurt</h3>
+                    <p class="text-[10px] text-white/30 uppercase font-black tracking-widest mb-4">Basically a wall</p>
 
                     <div class="space-y-3">
                         <div>
@@ -431,8 +432,8 @@
                         class="h-32 mb-4 bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-xl flex items-center justify-center">
                         <span class="text-4xl">⚡</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Interceptor</h3>
-                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">High Mobility</p>
+                    <h3 class="text-xl font-black text-white mb-1">Fast Gurt</h3>
+                    <p class="text-[10px] text-white/30 uppercase font-black tracking-widest mb-4">He's zoomin'</p>
 
                     <div class="space-y-3">
                         <div>
@@ -475,8 +476,8 @@
                         class="h-32 mb-4 bg-gradient-to-br from-red-500/20 to-rose-500/20 rounded-xl flex items-center justify-center">
                         <span class="text-4xl">🦍</span>
                     </div>
-                    <h3 class="text-xl font-bold text-white mb-1">Juggernaut</h3>
-                    <p class="text-xs text-white/40 uppercase tracking-wider mb-4">Heavy Ordnance</p>
+                    <h3 class="text-xl font-black text-white mb-1">Angry Gurt</h3>
+                    <p class="text-[10px] text-white/30 uppercase font-black tracking-widest mb-4">Problematic</p>
 
                     <div class="space-y-3">
                         <div>
@@ -525,8 +526,8 @@
             </div>
 
             <div class="mb-6">
-                <h2 class="text-3xl font-bold text-white mb-2">Mission Report</h2>
-                <p class="text-white/50 text-sm uppercase tracking-widest">Operation Complete</p>
+                <h2 class="text-3xl font-black text-white mb-2 italic">Gurt Results</h2>
+                <p class="text-white/30 text-[10px] uppercase font-black tracking-widest">All Gurted Out</p>
             </div>
 
             <!-- Score -->
@@ -556,8 +557,8 @@
             </div>
 
             <button onclick="closeGameOver()"
-                class="w-full bg-white text-black hover:bg-gray-200 font-bold py-4 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg">
-                RETURN TO BASE
+                class="w-full bg-white text-black hover:bg-gray-200 font-black py-4 rounded-xl transition-all transform hover:scale-[1.02] shadow-lg tracking-widest uppercase text-xs">
+                GO AGAIN?
             </button>
         </div>
     </div>
@@ -576,7 +577,7 @@
                             d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2 1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5" />
                     </svg>
                 </div>
-                <h1 class="text-xl font-medium tracking-tight text-white/90">RoboCommander</h1>
+                <h1 class="text-xl font-black tracking-tighter text-white/90">gurt.tech</h1>
             </div>
 
             <!-- Wallet & Connection -->
@@ -611,7 +612,7 @@
                                     class="animate-ping absolute inline-flex h-full w-full rounded-full bg-ios-red opacity-75"></span>
                                 <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-ios-red"></span>
                             </span>
-                            Live Feed
+                            GURT CAM (LIVE)
                         </div>
                     </div>
 
@@ -676,7 +677,7 @@
                             <div class="flex flex-col gap-1 w-32">
                                 <div
                                     class="flex justify-between text-[10px] text-white/50 uppercase font-mono tracking-wider">
-                                    <span>Throttle</span>
+                                    <span>Zoomies</span>
                                     <span id="hud-speed-val">0</span>
                                 </div>
                                 <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
@@ -689,7 +690,7 @@
                             <!-- Ammo -->
                             <div class="text-right">
                                 <div class="text-[10px] text-white/50 uppercase font-mono tracking-wider mb-0.5">
-                                    Ammunition</div>
+                                    Pew Pews</div>
                                 <div class="flex items-baseline justify-end gap-1">
                                     <span id="hud-ammo-count"
                                         class="text-4xl font-mono font-bold text-white tracking-tighter">--</span>
@@ -708,8 +709,8 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                                     d="M18.364 5.636a9 9 0 010 12.728m0 0l-2.829-2.829m2.829 2.829L21 21M15.536 8.464a5 5 0 010 7.072m0 0l-2.829-2.829m-4.243 2.829a4.978 4.978 0 01-1.414-2.83m-1.414 5.658a9 9 0 01-2.167-9.238m7.824 2.167a1 1 0 111.414 1.414m-1.414-1.414L3 3m8.293 8.293l1.414 1.414" />
                             </svg>
-                            <p class="text-white/40 text-sm font-medium tracking-wide px-6">Media Offline. If video
-                                doesn't load, try refreshing your browser</p>
+                            <p class="text-white/40 text-xs font-black tracking-widest px-6 uppercase italic">Gurt is
+                                sleeping // Media Offline</p>
                         </div>
                     </div>
 
@@ -744,11 +745,11 @@
                     </div>
 
                     <div class="flex justify-between items-center border-b border-white/5 pb-4">
-                        <h2 class="text-lg font-medium text-white/90">Mission Control</h2>
+                        <h2 class="text-lg font-black tracking-tight text-white/90">GURT CONTROL</h2>
                         <div id="status-display" class="hidden">
                             <span id="player-status"
                                 class="px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide uppercase bg-white/5 text-white/60">
-                                Spectating
+                                Just Watching
                             </span>
                         </div>
                     </div>
@@ -778,7 +779,8 @@
                                     P
                                 </div>
                                 <div>
-                                    <div class="text-[10px] text-white/40 uppercase font-medium">Pilot</div>
+                                    <div class="text-[10px] text-white/30 uppercase font-black tracking-widest">Gurt
+                                        Master</div>
                                     <div id="current-pilot-name" class="text-sm font-medium text-white/90">Anonymous
                                     </div>
                                 </div>
@@ -790,7 +792,7 @@
                         <div class="pt-2 space-y-3">
                             <button id="stop-btn" onclick="stopGame()"
                                 class="w-full py-3 rounded-xl bg-ios-red/10 text-ios-red font-medium text-sm hover:bg-ios-red hover:text-white transition-all duration-300 hidden">
-                                Abort Mission
+                                Eject Gurt
                             </button>
 
                             <!-- Sim Controls -->
@@ -810,16 +812,16 @@
                     <!-- Queue / Join Mode UI -->
                     <div id="start-panel" class="space-y-4">
                         <div class="space-y-2">
-                            <label class="text-xs text-white/40 font-medium uppercase tracking-wider ml-1">Operative
-                                ID</label>
-                            <input type="text" id="player-name" placeholder="Enter codename"
+                            <label class="text-[10px] text-white/20 font-black uppercase tracking-[0.2em] ml-1">Gurt
+                                Name</label>
+                            <input type="text" id="player-name" placeholder="Name your gurt"
                                 class="w-full bg-[#1c1c1e] text-white placeholder-white/20 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-1 focus:ring-ios-blue/50 focus:border-ios-blue/50 transition-all">
                         </div>
 
                         <button onclick="requestLoadout()" id="join-btn"
-                            class="w-full bg-ios-blue hover:bg-[#0071e3] text-white font-medium py-3.5 rounded-xl transition-all shadow-lg shadow-ios-blue/20 active:scale-[0.98]"
-                            aria-label="Initialize Uplink">
-                            Initialize Uplink
+                            class="w-full bg-ios-blue hover:bg-[#0071e3] text-white font-black py-3.5 rounded-xl transition-all shadow-lg shadow-ios-blue/20 active:scale-[0.98] tracking-widest uppercase text-xs"
+                            aria-label="Press to Gurt">
+                            PRESS TO GURT
                         </button>
 
                         <button onclick="cancelQueue()" id="cancel-btn"
@@ -847,7 +849,8 @@
 
                 <!-- Leaderboard Card -->
                 <div class="glass-panel rounded-3xl p-6 flex-1 flex flex-col max-h-[400px]">
-                    <h3 class="text-sm font-medium text-white/60 mb-4 uppercase tracking-wider px-1">Top Agents</h3>
+                    <h3 class="text-[10px] font-black text-white/30 mb-4 uppercase tracking-[0.3em] px-1">GURT
+                        ENTHUSIASTS</h3>
 
                     <div class="overflow-y-auto pr-2 -mr-2 space-y-1">
                         <table class="w-full text-left border-collapse">

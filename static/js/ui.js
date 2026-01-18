@@ -29,7 +29,7 @@ let myName = "";
 let isMyTurn = false;
 let wasActive = false;
 export let currentMode = 'casual';
-export let selectedLoadout = { id: 'vanguard', name: 'Vanguard' };
+export let selectedLoadout = { id: 'vanguard', name: 'Big Gurt' };
 let confirmationTimerInterval = null;
 
 export function getIsMyTurn() {
@@ -111,7 +111,7 @@ export function updateGameState(state) {
         stopBtn.classList.remove('hidden');
         if (simControls) simControls.classList.remove('hidden');
         // Clear Title
-        document.title = "RoboCommander";
+        document.title = "gurt.tech";
     } else {
         // Am I in queue?
         const position = state.queue.indexOf(myName);
@@ -120,7 +120,7 @@ export function updateGameState(state) {
         const isConfirming = loadoutModal && loadoutModal.classList.contains('active');
 
         if (position !== -1) {
-            playerStatus.textContent = `QUEUE #${position + 1}`;
+            playerStatus.textContent = `LINED UP #${position + 1}`;
             playerStatus.className = "text-[10px] font-bold tracking-wide uppercase text-ios-yellow bg-ios-yellow/10 px-2 py-0.5 rounded-full";
 
             // ETA Calculation: (Position) * 60s + Time Left
@@ -135,7 +135,7 @@ export function updateGameState(state) {
 
             // Only update title/modal if we are NOT in the confirmation phase
             if (!isConfirming) {
-                document.title = `(${etaString}) Waiting...`;
+                document.title = `(${etaString}) Gurt Waiting...`;
 
                 // Show Modal IF not already in match confirmation and newly joined (implied by existence in queue but no match found yet)
                 // Logic: If I am in queue, and not confirming (handled by handleMatchFound closing this), show it.
@@ -164,7 +164,7 @@ export function updateGameState(state) {
             playerStatus.className = "text-[10px] font-bold tracking-wide uppercase text-white/50 bg-white/10 px-2 py-0.5 rounded-full";
             // Hide Queue Modal if not in queue
             if (queueModal) queueModal.classList.add('hidden');
-            if (!isConfirming) document.title = "RoboCommander";
+            if (!isConfirming) document.title = "gurt.tech // specifically for response-y things";
         }
         // Hide control buttons
         stopBtn.classList.add('hidden');
@@ -253,7 +253,7 @@ export function updatePingDisplay(latency) {
 function renderLeaderboard(data) {
     if (!leaderboardBody) return;
     if (!data || data.length === 0) {
-        leaderboardBody.innerHTML = '<tr class="text-gray-500 italic"><td colspan="3" class="py-4 text-center">No records yet</td></tr>';
+        leaderboardBody.innerHTML = '<tr class="text-white/10 italic"><td colspan="3" class="py-8 text-center text-[10px] tracking-[0.3em] uppercase font-black">No gurts found</td></tr>';
         return;
     }
 
@@ -271,7 +271,8 @@ function renderLeaderboard(data) {
             styleClass = 'text-red-400 bg-red-500/10 border-red-500/20';
         }
 
-        const displayName = className.charAt(0).toUpperCase() + className.slice(1);
+        const names = { 'vanguard': 'BIG GURT', 'interceptor': 'FAST GURT', 'juggernaut': 'ANGRY GURT' };
+        const displayName = names[className] || 'GURT';
 
         return `
         <tr class="hover:bg-white/5 transition-colors border-b border-white/5 last:border-0">
@@ -368,10 +369,8 @@ export function selectTank(id) {
         if (icon) icon.classList.remove('opacity-0');
     }
 
-    let name = "Vanguard";
-    if (id === 'interceptor') name = "Interceptor";
-    if (id === 'juggernaut') name = "Juggernaut";
-    selectedLoadout = { id, name };
+    const names = { 'vanguard': 'Big Gurt', 'interceptor': 'Fast Gurt', 'juggernaut': 'Angry Gurt' };
+    selectedLoadout = { id, name: names[id] };
 }
 
 export function handleMatchFound(timeoutSeconds) {
@@ -388,25 +387,25 @@ export function handleMatchFound(timeoutSeconds) {
     } catch (e) { console.warn("Audio play failed", e); }
 
     // Update Title
-    document.title = "ACTION REQUIRED!";
+    document.title = "GURT ALERT!";
 
     // Reset Button State
     const deployBtn = document.getElementById('deploy-btn');
     if (deployBtn) {
         deployBtn.disabled = false;
-        deployBtn.innerText = currentMode === 'ranked' ? "PAY 0.1 SOL & DEPLOY" : "DEPLOY UNIT";
+        deployBtn.innerText = currentMode === 'ranked' ? "PAY 0.1 SOL & GURT" : "GURT DEPLOY";
     }
 
-    modal.classList.add('active');
+    if (modal) modal.classList.add('active');
 
     let timeLeft = timeoutSeconds;
-    timerElem.textContent = timeLeft;
+    if (timerElem) timerElem.textContent = timeLeft;
 
     if (confirmationTimerInterval) clearInterval(confirmationTimerInterval);
 
     confirmationTimerInterval = setInterval(() => {
         timeLeft--;
-        timerElem.textContent = timeLeft;
+        if (timerElem) timerElem.textContent = timeLeft;
         if (timeLeft <= 0) {
             clearInterval(confirmationTimerInterval);
             closeLoadout();
@@ -437,12 +436,12 @@ export async function confirmLoadoutWrapper() {
         }
 
         const button = document.getElementById('deploy-btn');
-        let originalText = "DEPLOY UNIT";
+        let originalText = "GURT DEPLOY";
 
         if (button) {
             originalText = button.innerText;
             button.disabled = true;
-            button.innerText = "Processing Transaction...";
+            button.innerText = "Taking your money...";
         }
 
         try {

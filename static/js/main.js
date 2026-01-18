@@ -81,7 +81,7 @@ function onMessage(event) {
                 handleMatchFound(data.timeout);
             } else if (data.type === 'match_timeout') {
                 closeLoadout();
-                alert("Match confirmation timed out!");
+                alert("Too slow! You missed your gurt.");
             } else if (data.type === 'game_over') {
                 showGameOver(data.stats);
             } else if (data.type === 'qr_detected') {

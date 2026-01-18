@@ -7,8 +7,8 @@ import time
 import struct
 import ssl
 
-SERVER_URL = "ws://localhost:8000/ws/pi"
-#SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
+#SERVER_URL = "ws://localhost:8000/ws/pi"
+SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
 
 # Camera Setup (Try index 0, else 1, else None)
 cap = cv2.VideoCapture(0)
@@ -57,7 +57,7 @@ async def send_video(websocket):
                 # Generate Noise Frame
                 frame = np.random.randint(0, 255, (480, 640, 3), dtype=np.uint8)
                 # Add text
-                cv2.putText(frame, f"Simulated Pi: {time.time()}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
+                cv2.putText(frame, f"Gurt Pi: {time.time()}", (50, 50), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2)
 
             # Compress to JPEG
             _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
