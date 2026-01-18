@@ -199,12 +199,15 @@ export function updateGameState(state) {
 
     // Update HUD
     const hudOverlay = document.getElementById('hud-overlay');
+    const enemyPanel = document.getElementById('hud-enemy-panel');
     if (hudOverlay) {
         if (state.active) {
             hudOverlay.classList.remove('opacity-0');
+            if (enemyPanel) enemyPanel.classList.remove('opacity-0');
             updateHUD(state, controllerState);
         } else {
             hudOverlay.classList.add('opacity-0');
+            if (enemyPanel) enemyPanel.classList.add('opacity-0');
         }
     }
 
@@ -223,22 +226,27 @@ export function updateGameState(state) {
 export function updatePingDisplay(latency) {
     const pingEl = document.getElementById('hud-ping');
     if (pingEl) {
-        const value = Math.round(Math.max(0, latency));
-        const text = `${value}ms`;
-        const label = pingEl.querySelector('.label');
         const val = pingEl.querySelector('.value');
+        if (!val) return;
 
-        if (val) val.textContent = text;
+        if (latency === null || latency === undefined) {
+            val.textContent = "NA";
+            val.className = "value font-mono text-xl tracking-widest text-white/20";
+            return;
+        }
 
-        // Color Logic per user request
-        let colorClass = 'text-ios-green'; // Default < 100
+        const value = Math.round(Math.max(0, latency));
+        val.textContent = `${value}ms`;
+
+        // Color Logic
+        let colorClass = 'text-ios-green';
         if (value >= 100 && value < 200) {
             colorClass = 'text-ios-yellow';
         } else if (value >= 200) {
             colorClass = 'text-ios-red';
         }
 
-        if (val) val.className = `value font-mono text-xl tracking-widest ${colorClass}`;
+        val.className = `value font-mono text-xl tracking-widest ${colorClass}`;
     }
 }
 

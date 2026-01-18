@@ -20,7 +20,7 @@ import {
     closeGameOver,
     dismissQueueModal, // Added
     updatePingDisplay
-} from './ui.js?v=17';
+} from './ui.js?v=19';
 import { connectWallet } from './wallet.js';
 
 // Expose functions to global scope for HTML event handlers
@@ -62,6 +62,11 @@ if (enterBtn) {
 
 function onOpen() {
     setConnectionState(true);
+    // Start Watchdog immediately to show "Media Offline" if no frames arrive
+    resetWatchdog(() => {
+        videoOverlay.classList.remove('hidden');
+        updatePingDisplay(null);
+    });
     requestAnimationFrame(updateLoop);
 }
 
@@ -82,8 +87,10 @@ function onMessage(event) {
             } else if (data.type === 'qr_detected') {
                 drawQRCodes(data.data);
             } else if (data.type === 'pong') {
-                const latency = Date.now() - data.timestamp;
-                updatePingDisplay(latency);
+                // We no longer update HUD ping from websocket RTT 
+                // to avoid flickering NA state when media is offline.
+                // const latency = Date.now() - data.timestamp;
+                // updatePingDisplay(latency);
             }
         } catch (e) {
             console.error("Failed to parse JSON", e);
@@ -120,6 +127,7 @@ function onMessage(event) {
             // Reset Watchdog
             resetWatchdog(() => {
                 videoOverlay.classList.remove('hidden');
+                updatePingDisplay(null);
             });
         }
     }
@@ -128,6 +136,7 @@ function onMessage(event) {
 function onClose() {
     setConnectionState(false);
     videoOverlay.classList.remove('hidden');
+    updatePingDisplay(null);
     // Watchdog cleared by network.js calling connect again
 }
 
