@@ -164,7 +164,7 @@ export function updateGameState(state) {
             playerStatus.className = "text-[10px] font-bold tracking-wide uppercase text-white/50 bg-white/10 px-2 py-0.5 rounded-full";
             // Hide Queue Modal if not in queue
             if (queueModal) queueModal.classList.add('hidden');
-            if (!isConfirming) document.title = "gurt.tech // specifically for response-y things";
+            if (!isConfirming) document.title = "GURT // Ground Unit Response Tank";
         }
         // Hide control buttons
         stopBtn.classList.add('hidden');
