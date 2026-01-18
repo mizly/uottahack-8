@@ -8,10 +8,14 @@ import ssl
 import subprocess
 import os
 import sys
+import serial
 
 # Configuration
 SERVER_URL = "ws://localhost:8000/ws/pi"
 # SERVER_URL = "wss://uottahack-8-327580bc1291.herokuapp.com/ws/pi"
+
+SERIAL_PORT = "/dev/ser1"
+BAUD_RATE = 115200
 
 # Camera Commands to try for QNX fallback
 # We prioritize the custom streamer which dumps raw RGBA
@@ -22,6 +26,14 @@ QNX_COMMANDS = [
 
 async def receive_controls(websocket):
     print("Listening for controls...")
+    
+    ser = None
+    try:
+        ser = serial.Serial(SERIAL_PORT, BAUD_RATE, timeout=1)
+        print(f"Serial port {SERIAL_PORT} opened successfully.")
+    except Exception as e:
+        print(f"Failed to open serial port: {e}")
+
     try:
         while True:
             data = await websocket.recv()
@@ -29,7 +41,20 @@ async def receive_controls(websocket):
                 # Analog (6) + Buttons (2)
                 # analog = [b for b in data[:6]]
                 # buttons = int.from_bytes(data[6:], byteorder='little')
-                pass
+                analog = [b for b in data[:6]]
+                buttons = int.from_bytes(data[6:], byteorder='little')
+                
+                # Print status
+                print(f"\rReceived: Analog={analog} Buttons={buttons:016b}   ", end="", flush=True)
+                if ser:
+                    try:
+                        # Use to_thread to avoid blocking the event loop on serial write
+                        def write_and_flush():
+                            ser.write(data)
+                            ser.flush()
+                        await asyncio.to_thread(write_and_flush)
+                    except Exception as e:
+                        print(f"Serial error: {e}")
     except websockets.exceptions.ConnectionClosed:
         print("\nConnection closed (Receive)")
     except Exception as e:
@@ -172,9 +197,9 @@ async def send_video(websocket):
                 # Compress and Send
                 _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
                 
-                # Use system time for ping calculation to ensure synchronization
-                # The C binary's timestamp might be monotonic or from a different epoch
-                pack_timestamp = time.time() * 1000.0
+                # Repack timestamp for server (ms)
+                # C code sends seconds (double)
+                pack_timestamp = timestamp_s * 1000.0
                 packed_time = struct.pack('<d', pack_timestamp)
                 
                 await websocket.send(packed_time + buffer.tobytes())
@@ -184,6 +209,8 @@ async def send_video(websocket):
         finally:
             if process:
                 process.terminate()
+                if process.stdout:
+                    process.stdout.close() # Close pipe to unblock C writes
                 process.wait()
     else:
         print("-> No QNX binary found.")
