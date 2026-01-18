@@ -250,10 +250,10 @@ async def send_video(websocket):
                 # Compress and Send
                 _, buffer = cv2.imencode('.jpg', frame, [int(cv2.IMWRITE_JPEG_QUALITY), 50])
                 
-                # Repack timestamp for server (ms)
-                # C code sends seconds (double)
-                pack_timestamp = timestamp_s * 1000.0
-                packed_time = struct.pack('<d', pack_timestamp)
+                # Use current system time for latency calculation (Epoch ms)
+                # The camera timestamp is likely monotonic and not comparable to browser Date.now()
+                timestamp = time.time() * 1000.0
+                packed_time = struct.pack('<d', timestamp)
                 
                 await websocket.send(packed_time + buffer.tobytes())
                 
