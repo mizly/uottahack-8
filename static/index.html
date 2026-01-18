@@ -165,6 +165,8 @@
 
         .score-pop {
             position: absolute;
+            z-index: 1000;
+            /* Ensure it's on top */
             font-family: 'SF Mono', 'Fira Code', monospace;
             font-weight: 900;
             color: #30d158;
@@ -395,11 +397,16 @@
 
                 <div id="ranked-info"
                     class="hidden mb-4 p-4 rounded-xl bg-gradient-to-r from-ios-yellow/10 to-transparent border border-ios-yellow/20 max-w-md mx-auto">
-                    <div class="flex items-center justify-between text-ios-yellow">
-                        <span class="flex items-center gap-2 text-sm font-semibold">
-                            ⚠️ GAMER MODE ACTIVE
-                        </span>
-                        <span class="font-mono text-sm">Cost: 0.1 SOL</span>
+                    <div class="flex flex-col gap-1">
+                        <div class="flex items-center justify-between text-ios-yellow">
+                            <span class="flex items-center gap-2 text-sm font-semibold">
+                                ⚠️ GAMER MODE ACTIVE
+                            </span>
+                            <span class="font-mono text-sm">Cost: 0.1 SOL</span>
+                        </div>
+                        <div class="text-[10px] text-ios-yellow/70 uppercase font-black tracking-widest text-left">
+                            Reach 500 PTS to Win 0.18 SOL
+                        </div>
                     </div>
                 </div>
 

@@ -310,6 +310,10 @@ class ConnectionManager:
         if self.game_state.is_active:
             self.game_state.score += points
             await self.broadcast_game_update()
+            
+            # Check Win Condition for manual adds (Keep going)
+            if self.game_state.is_ranked and self.game_state.score >= WIN_THRESHOLD:
+                print("Manual Score: Win Threshold Reached! (Continuing...)")
 
     async def game_timer(self):
         while self.game_state.is_active:
@@ -343,6 +347,10 @@ class ConnectionManager:
                             # If we hit something, we should broadcast update immediately
                             if shot_result['hits']:
                                 await self.broadcast_game_update()
+                                
+                                # Check Win Condition (Keep going)
+                                if self.game_state.is_ranked and self.game_state.score >= WIN_THRESHOLD:
+                                    print("Win Threshold Reached! (Continuing...)")
 
                 await self.broadcast_to_pi(data)
             

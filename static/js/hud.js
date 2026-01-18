@@ -41,11 +41,11 @@ export function updateHUD(gameState, inputState) {
         maxAmmo = gameState.max_ammo || 30; // Default
 
         // Infer Cooldown based on Max Ammo (Class)
-        // Vanguard (30) -> 500ms
-        // Interceptor (60) -> 200ms
-        // Juggernaut (10) -> 1000ms
-        if (maxAmmo === 60) cooldownDuration = 200;
-        else if (maxAmmo === 10) cooldownDuration = 1000;
+        // Vanguard (45) -> 500ms
+        // Interceptor (90) -> 200ms
+        // Juggernaut (15) -> 1000ms
+        if (maxAmmo === 90) cooldownDuration = 200;
+        else if (maxAmmo === 15) cooldownDuration = 1000;
         else cooldownDuration = 500;
 
         if (ammoCount) {
@@ -60,10 +60,13 @@ export function updateHUD(gameState, inputState) {
     if (gameState.score !== undefined) {
         if (gameState.score > lastScore) {
             const diff = gameState.score - lastScore;
-            // Only trigger if difference is positive and huge (like 100) or just any positive?
-            // User asked for +100 fading in.
+            console.log(`[HUD] Score increased! Old: ${lastScore}, New: ${gameState.score}, Diff: ${diff}`);
             triggerScoreAnimation(diff);
         }
+        // Only update lastScore if we actually have a score (prevent reset on empty state)
+        // But gameState.score check handles undefined.
+        // Also check if we just initialized (lastScore=0), maybe we shouldn't animate initial load?
+        // For now, let's just log.
         lastScore = gameState.score;
     }
 

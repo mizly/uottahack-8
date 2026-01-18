@@ -58,13 +58,13 @@ class GameState:
         # Reset Tracker
         self.tracker = Tracker()
         
-        # Init Ammo
+        # Init Ammo (+50% increase)
         if p_class == 'interceptor':
-            self.max_ammo = 60
+            self.max_ammo = 90 # 60 * 1.5
         elif p_class == 'juggernaut':
-            self.max_ammo = 10
+            self.max_ammo = 15 # 10 * 1.5
         else:
-            self.max_ammo = 30
+            self.max_ammo = 45 # 30 * 1.5
         self.ammo = self.max_ammo
         
         # Init Enemies
@@ -157,7 +157,16 @@ class GameState:
             # Kill Bonus
             self.score += 100
             print(f"DESTROYED {enemy['name']}!")
-            # Convert to "Dead" state? OR Respawn?
-            # For now, keep at 0. Maybe respawn after delay?
-            # self.enemies.remove(enemy) # Don't remove, keeps HUD stable
+            
+            # Check if all enemies are dead
+            if all(e['hp'] == 0 for e in self.enemies):
+                print("Squad Wipe! Respawning enemies and refilling ammo...")
+                # Refill Ammo
+                self.ammo = self.max_ammo
+                
+                for e in self.enemies:
+                    # Randomize HP on respawn? Let's use the same logic as init
+                    respawn_hp = random.randint(60, 150)
+                    e['hp'] = respawn_hp
+                    e['max_hp'] = respawn_hp
 

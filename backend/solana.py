@@ -56,7 +56,7 @@ print(f"\\n[SOLANA] House Wallet Public Key: {HOUSE_KEYPAIR.pubkey()}")
 print("[SOLANA] Please fund this wallet on Devnet for payouts to work!\\n")
 
 ENTRY_FEE = 0.1 * 10**9 # 0.1 SOL in lamports
-WIN_THRESHOLD = 50 # Score to win
+WIN_THRESHOLD = 500 # Score to win
 PAYOUT_AMOUNT = 0.18 * 10**9 # 0.18 SOL (House takes fee)
 
 async def verify_transaction(signature: str, expected_payer: str) -> bool:
