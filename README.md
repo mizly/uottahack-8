@@ -1,5 +1,4 @@
-# UOttaHack 8 Project - RoboCommander 🤖 + Solana ◎
-
+# UOttaHack 8 Project - GURT (Ground Unit Response Tank)
 ## Features
 - **Real-time Video Feed**: Low latency streaming from Pi using a **custom-built QNX camera driver** (optimized from 3fps to 30fps).
 - **Low Latency Control**: WebSocket-based control loop.
@@ -95,4 +94,4 @@ python pi_client.py
 
 -   **Port 8000 already in use**: Edit `server.py` and change the port in `uvicorn.run(..., port=8000)`.
 -   **No Webcam**: The `pi_client.py` will automatically fall back to generating visual noise if no webcam is detected.
--   **QNX Driver Issues**: Ensure binary permissions are set correctly for the camera subprocess.
+-   **Connection Refused**: Ensure the server is running before starting the client.
