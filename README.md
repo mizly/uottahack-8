@@ -1,6 +1,9 @@
-# UOttaHack 8 Project - GURT (Ground Unit Response Tank)
+# UOttaHack 8 Best Hardware Hack - GURT (Ground Unit Response Tank)
+
+[Devpost](https://devpost.com/software/ground-unit-response-tank-g-u-r-t)
+
 ## Features
-- **Real-time Video Feed**: Low latency streaming from Pi using a **custom-built QNX camera driver** (optimized from 3fps to 30fps).
+- **Real-time Video Feed**: Low latency streaming from Pi using a **custom-built QNX camera driver** (optimized from ~3fps to being able to run consistent 30fps).
 - **Low Latency Control**: WebSocket-based control loop.
 - **Hardware Integration**: Real-world hardware control with Raspberry Pi 4 and Arduino.
 - **Two Game Modes**:
