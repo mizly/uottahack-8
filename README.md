@@ -1,6 +1,6 @@
 # UOttaHack 8 Best Hardware Hack - GURT (Ground Unit Response Tank)
 
-[Devpost](https://devpost.com/software/ground-unit-response-tank-g-u-r-t)
+[Devpost](https://devpost.com/software/ground-unit-response-tank-g-u-r-t) | 
 [gurt.tech](https://gurt.tech) (Robot is currently decommissioned so website will not work D: rest in piece gurt)
 
 ![Gurt and the enemies](/static/images/thumb.jpg)
