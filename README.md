@@ -2,6 +2,7 @@
 
 [Devpost](https://devpost.com/software/ground-unit-response-tank-g-u-r-t)
 
+![Gurt and the enemies](/static/images/thumb.jpg)
 ## Features
 - **Real-time Video Feed**: Low latency streaming from Pi using a **custom-built QNX camera driver** (optimized from ~3fps to being able to run consistent 30fps).
 - **Low Latency Control**: WebSocket-based control loop.
